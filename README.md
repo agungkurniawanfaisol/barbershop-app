@@ -1,75 +1,92 @@
-# BarberPro POS
+# BarberPro POS — Foundation
 
-Enterprise barbershop management and point-of-sale system.
+Enterprise barbershop management system. This document describes the **foundation layer only** — no business features.
 
-## Tech Stack
-
-- **Framework:** Next.js 16 (App Router) + React 19 + TypeScript
-- **Styling:** Tailwind CSS v4 + shadcn/ui + Radix UI
-- **Database:** PostgreSQL (Supabase) + Prisma ORM
-- **Auth:** Supabase Auth
-- **State:** Zustand + TanStack Query
-
-## Getting Started
-
-### 1. Environment
+## Quick Start
 
 ```bash
-cp .env.example .env
-# Fill in Supabase credentials and DATABASE_URL
+cp .env.example .env   # fill Supabase credentials
+docker compose up --build
 ```
 
-### 2. Local Development (without Docker)
+Development runs entirely in Docker — do not use `npm run dev` on the host.
+
+## Docker (App + Redis)
 
 ```bash
-npm install
-npx prisma generate
-npm run dev
+npm run docker:dev     # foreground
+npm run docker:build   # rebuild image after Dockerfile changes
+npm run docker:down    # stop stack
 ```
 
-Open [http://localhost:3000](http://localhost:3000).
+| Service | URL |
+|---------|-----|
+| App | http://localhost:5173 |
+| Redis | internal (`redis:6379`) |
 
-### 3. Docker Development (with Redis + Mailpit)
-
-```bash
-cp .env.example .env
-npm run docker:dev
-```
-
-| Service  | URL                        |
-|----------|----------------------------|
-| App      | http://localhost:3000      |
-| Mailpit  | http://localhost:8025      |
-| Redis    | localhost:6379             |
-
-### 4. Database Migrations
-
-```bash
-npx prisma migrate dev --name init
-```
-
-## Project Structure
+## Folder Structure
 
 ```
-app/           → Routes & pages
-features/      → Feature-specific UI
-actions/       → Server Actions
-repositories/  → Data access (Prisma)
-services/      → Business logic
-schemas/       → Zod validation
-providers/     → React context providers
-docker/        → Docker Compose & Dockerfile
-prisma/        → Database schema
+app/              Routes, layouts, global styles
+features/         Feature modules (Phase 3+)
+components/
+  ui/             shadcn/ui primitives (Radix/Base UI)
+  forms/          Shared form components
+  layout/         Shell, theme toggle
+actions/          Server Actions
+repositories/     Prisma data access
+services/         Business logic
+hooks/            React hooks
+providers/        Context providers
+stores/           Zustand stores
+schemas/          Zod validation schemas
+types/            TypeScript types
+constants/        App constants
+utils/            Pure utilities
+lib/              Infrastructure (prisma, supabase, redis, mail)
+config/           App configuration
+prisma/           Database schema
+docker/           Dockerfile
+public/           Static assets
 ```
 
-## Development Phases
+## Path Aliases
 
-| Phase | Status | Scope                    |
-|-------|--------|--------------------------|
-| 1     | ✅     | Foundation & scaffolding |
-| 2     | ⏳     | Auth + RBAC              |
-| 3     | ⏳     | Core CRUD modules        |
-| 4     | ⏳     | Cashier POS              |
-| 5     | ⏳     | Dashboard                |
-| 6     | ⏳     | Reports + Expenses       |
-| 7     | ⏳     | Settings, Users, Audit   |
+| Alias | Path |
+|-------|------|
+| `@/*` | Project root |
+| `@/components/*` | `components/` |
+| `@/features/*` | `features/` |
+| `@/lib/*` | `lib/` |
+| `@/stores/*` | `stores/` |
+
+## Scripts
+
+| Command | Description |
+|---------|-------------|
+| `npm run dev` | Dev server with Turbopack |
+| `npm run build` | Production build |
+| `npm run lint` | ESLint |
+| `npm run format` | Prettier |
+| `npm run typecheck` | TypeScript check |
+| `npm run db:migrate` | Prisma migrate |
+| `npm run db:seed` | Seed demo data |
+
+## Agent setup (Cursor)
+
+Project memory, skills, and rules live in:
+
+- **`AGENTS.md`** — stack, architecture, modules, env
+- **`.cursor/skills/`** — BarberPro-specific skills (`barberpro-architecture`, `barberpro-feature-module`, `barberpro-rbac-audit`)
+- **`.cursor/rules/`** — layered Cursor rules (core, actions, client boundary, data layer, design)
+- **`.agents/skills/`** — external skills from [skills.sh](https://skills.sh) (Next.js, Prisma 7, Supabase)
+
+See `.cursor/README.md` for the full index.
+
+## Stack
+
+- Next.js 15 · React 19 · TypeScript (strict)
+- Tailwind CSS v4 · shadcn/ui · Lucide icons
+- Prisma 7 · Supabase Auth + PostgreSQL
+- Zustand · TanStack Query · RHF · Zod
+- Docker Compose · Redis

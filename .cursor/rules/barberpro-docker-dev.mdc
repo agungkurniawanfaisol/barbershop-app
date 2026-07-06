@@ -1,0 +1,16 @@
+---
+description: Docker-only development on port 5173; no host npm run dev
+alwaysApply: true
+---
+
+# Docker Dev
+
+- Preferred dev: `npm run docker:dev` / `docker compose up --build`
+- App port: **5173** — `NEXT_PUBLIC_APP_URL=http://localhost:5173`
+- Services: `app` + `redis` only (no Mailpit)
+- Inside compose, `REDIS_URL=redis://redis:6379` is set automatically
+- Rebuild after Dockerfile or dependency changes: `npm run docker:build`
+- If pages show 500 / client exception / dev server restarts: `npm run docker:reset` (clears `.next` volume)
+- Docker dev uses webpack (`dev:docker`), not Turbopack — more stable on WSL bind mounts
+
+Do not document or default to port 3000 for this project.

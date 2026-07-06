@@ -1,0 +1,17 @@
+---
+description: Public landing page and marketing UI at /
+globs: app/page.tsx,features/landing/**,design-system/pages/landing.md,public/images/haircuts/**
+alwaysApply: false
+---
+
+# Landing Page
+
+- Public route `/` — no auth, no database queries
+- Components live in `features/landing/`; constants in `constants.ts`
+- Follow `design-system/pages/landing.md` then `design-system/barberpro-pos/MASTER.md`
+- Haircut images: `public/images/haircuts/` + `next/image` with dimensions
+- Marketing accent: emerald `#059669`; CTAs point to `/login`
+- Links as CTAs: `buttonVariants` + `Link` — not `Button` with `render` prop
+- Copy in Indonesian; Lucide icons only
+
+Invoke skill: `@barberpro-landing-page`

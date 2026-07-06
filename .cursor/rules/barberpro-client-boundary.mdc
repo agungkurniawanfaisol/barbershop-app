@@ -1,0 +1,27 @@
+---
+description: Client/server boundary and React UI conventions for BarberPro
+globs: features/**/*.{tsx,ts},components/**/*.{tsx,ts},stores/**/*.ts
+alwaysApply: false
+---
+
+# Client Boundary & UI
+
+## Do not import on client
+
+- `lib/prisma.ts`, `repositories/*`, `services/*` that use Prisma
+- `@/app/generated/prisma/client`
+- Server-only: `authorizeAction`, `requireRole`, `createAdminClient`
+
+Pass **DTOs** as props from server pages. For labels/enums use `constants/*` (e.g. `constants/expenses.ts`, `constants/reports.ts`).
+
+## UI patterns
+
+- shadcn Button: use `buttonVariants` + `Link` instead of `asChild`
+- Forms: `FormData` + `useTransition` + `toast` + `router.refresh()` (see `customer-manager.tsx`)
+- Lists: `SearchInput`, `PaginationControls`, `EmptyState`, `DeleteConfirmDialog`
+- Currency/dates: `formatCurrency`, `formatDate`, `formatDateTime` from `lib/format`
+- Page shell: `mx-auto max-w-7xl space-y-6` + title + muted description
+
+## Zustand
+
+Only for ephemeral UI (POS cart in `stores/pos.store.ts`). Server state via server pages + `router.refresh()`, not duplicated in Query for CRUD lists.

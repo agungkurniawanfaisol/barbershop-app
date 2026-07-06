@@ -1,0 +1,18 @@
+---
+description: Design system and UI styling for BarberPro POS
+globs: features/**/*.tsx,components/**/*.tsx,app/**/*.tsx,app/globals.css
+alwaysApply: false
+---
+
+# Design System
+
+- **Master**: `design-system/barberpro-pos/MASTER.md` — colors, typography, spacing
+- **Page overrides**: check `design-system/pages/[page].md` first when editing that page
+- **Colors**: primary blue `#2563EB`, accent green `#059669`, background `#F8FAFC`
+- **Font**: Inter (`--font-inter`); use `tabular-nums` for money and counts
+- **Components**: prefer existing shadcn primitives in `components/ui/`
+- **Layout**: cards with `rounded-xl border`; tables inside bordered containers
+- **Locale**: IDR currency via `formatCurrency`; `id-ID` locale in `config/site.ts`
+- **Print**: receipt uses `#receipt-print-area` + `@media print` in `globals.css`
+
+Do not introduce new color palettes or fonts without updating the design system master.

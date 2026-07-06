@@ -1,0 +1,35 @@
+---
+description: Server action patterns for BarberPro POS
+globs: actions/**/*.ts
+alwaysApply: false
+---
+
+# Server Actions
+
+```typescript
+"use server";
+
+export async function fooAction(input: unknown): Promise<ActionResult<FooDto>> {
+  const auth = await authorizeAction(ALLOWED_ROLES);
+  if (!isSuccess(auth)) return auth;
+
+  const parsed = fooSchema.safeParse(input);
+  if (!parsed.success) {
+    return failure(parsed.error.issues[0]?.message ?? "Invalid input");
+  }
+
+  try {
+    const result = await fooService.mutate(parsed.data, auth.data.id);
+    revalidatePath(ROUTES.foo);
+    return success(result);
+  } catch (error) {
+    return failure(error instanceof Error ? error.message : "Operation failed");
+  }
+}
+```
+
+- Always `authorizeAction` before mutations
+- Always Zod `safeParse`; return first issue message
+- `revalidatePath` affected routes after success
+- Log to audit for settings, users, expenses (see `actions/expense.actions.ts`)
+- Do not import client components or `"use client"` modules

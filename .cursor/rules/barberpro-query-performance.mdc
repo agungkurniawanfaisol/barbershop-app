@@ -1,0 +1,16 @@
+---
+description: Prisma query performance for dashboards and repositories
+globs: repositories/**/*.ts,services/dashboard.service.ts,services/report.service.ts
+alwaysApply: false
+---
+
+# Query Performance
+
+- Use `select` with nested `select` — avoid `include` when only a few fields are needed
+- Aggregate time-series in SQL (`$queryRaw` GROUP BY) instead of `findMany` + JS loops
+- Dashboard reads: keep `Promise.all` in service; optimize each repository method
+- Filter soft-deleted rows: spread `notDeleted` on all queries
+- Date-range dashboards: rely on `@@index([status, paidAt])` on `Transaction`
+- Serialize `Decimal` in services with `toNumber()`, not in repositories
+
+See `.cursor/skills/barberpro-query-performance/SKILL.md` for examples.

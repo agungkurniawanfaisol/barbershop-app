@@ -1,7 +1,18 @@
 import { createServerClient } from "@supabase/ssr";
 import { NextResponse, type NextRequest } from "next/server";
 
-export async function updateSession(request: NextRequest) {
+export type MiddlewareAuthResult = {
+  response: NextResponse;
+  user: {
+    id: string;
+    email?: string;
+    app_metadata?: Record<string, unknown>;
+  } | null;
+};
+
+export async function updateSession(
+  request: NextRequest,
+): Promise<MiddlewareAuthResult> {
   let supabaseResponse = NextResponse.next({ request });
 
   const supabase = createServerClient(
@@ -25,8 +36,9 @@ export async function updateSession(request: NextRequest) {
     },
   );
 
-  // Refresh session — required for Server Components
-  await supabase.auth.getUser();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
 
-  return supabaseResponse;
+  return { response: supabaseResponse, user };
 }

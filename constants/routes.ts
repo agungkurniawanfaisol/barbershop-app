@@ -17,6 +17,7 @@ export const ROUTES = {
   settings: "/settings",
   users: "/users",
   audit: "/audit",
+  myEarnings: "/my-earnings",
 } as const;
 
 export type RouteKey = keyof typeof ROUTES;

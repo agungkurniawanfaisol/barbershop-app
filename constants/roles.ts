@@ -1,9 +1,14 @@
-export enum UserRole {
-  ADMIN = "ADMIN",
-  MANAGER = "MANAGER",
-  CASHIER = "CASHIER",
-  BARBER = "BARBER",
-}
+import { ROUTES } from "@/constants/routes";
+
+/** Client-safe role enum — mirrors Prisma UserRole */
+export const UserRole = {
+  ADMIN: "ADMIN",
+  MANAGER: "MANAGER",
+  CASHIER: "CASHIER",
+  BARBER: "BARBER",
+} as const;
+
+export type UserRole = (typeof UserRole)[keyof typeof UserRole];
 
 export const ROLE_LABELS: Record<UserRole, string> = {
   [UserRole.ADMIN]: "Administrator",
@@ -19,7 +24,6 @@ export const ROLE_HIERARCHY: Record<UserRole, number> = {
   [UserRole.BARBER]: 1,
 };
 
-/** Routes accessible per role — expanded in Phase 2 */
 export const ROLE_ROUTES: Record<UserRole, string[]> = {
   [UserRole.ADMIN]: ["*"],
   [UserRole.MANAGER]: [
@@ -40,7 +44,7 @@ export const ROLE_ROUTES: Record<UserRole, string[]> = {
     "/services",
     "/transactions",
   ],
-  [UserRole.BARBER]: ["/dashboard", "/transactions"],
+  [UserRole.BARBER]: [ROUTES.dashboard, ROUTES.myEarnings],
 };
 
 export function hasRoleAccess(role: UserRole, path: string): boolean {
@@ -49,4 +53,8 @@ export function hasRoleAccess(role: UserRole, path: string): boolean {
   return allowed.some(
     (route) => path === route || path.startsWith(`${route}/`),
   );
+}
+
+export function isUserRole(value: string): value is UserRole {
+  return Object.values(UserRole).includes(value as UserRole);
 }

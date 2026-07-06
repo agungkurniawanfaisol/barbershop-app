@@ -1,0 +1,32 @@
+---
+description: Prisma repository and service patterns for BarberPro
+globs: repositories/**/*.ts,services/**/*.ts,prisma/**/*
+alwaysApply: false
+---
+
+# Data Layer
+
+## Repository
+
+```typescript
+import { notDeleted, softDeleteData } from "@/repositories/base.repository";
+
+// Reads: where: { ...notDeleted, ...filters }
+// Soft delete: prisma.update({ data: softDeleteData() })
+```
+
+- Include relations needed for DTOs in `findMany`/`findById`
+- Use `$transaction` for multi-step writes (see `transaction.repository.ts`)
+
+## Service
+
+- Map Prisma models → DTOs in private `serialize*` functions
+- `toNumber()` for Decimal fields
+- Dates → `.toISOString()` in DTOs
+- Throw `Error` with user-safe messages; actions catch and `failure()`
+
+## Prisma 7
+
+- Client import: `@/app/generated/prisma/client`
+- Config: `prisma.config.ts`; generate output: `app/generated/prisma`
+- Run `npm run build` or `npx prisma generate` after schema changes

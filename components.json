@@ -17,7 +17,11 @@
     "utils": "@/lib/utils",
     "ui": "@/components/ui",
     "lib": "@/lib",
-    "hooks": "@/hooks"
+    "hooks": "@/hooks",
+    "types": "@/types",
+    "schemas": "@/schemas",
+    "stores": "@/stores",
+    "config": "@/config"
   },
   "menuColor": "default",
   "menuAccent": "subtle",

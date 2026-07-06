@@ -1,0 +1,16 @@
+---
+description: BarberPro POS core stack, architecture layers, and non-negotiable constraints
+alwaysApply: true
+---
+
+# BarberPro Core
+
+- **Stack**: Next.js 15 App Router, React 19, TS strict, Tailwind v4, shadcn/ui, Prisma 7 + pg adapter, Supabase Auth
+- **Layers**: page → feature UI → actions → services → repositories → schemas. Do not call Prisma from components or actions directly
+- **Client-safe**: `UserRole` from `constants/roles.ts`; `SessionUser` from `types/auth.ts`. Never import `@/app/generated/prisma/client` in client code
+- **Mutations**: server actions return `ActionResult<T>`; use `isSuccess()` only with a single `T`
+- **Data**: soft delete via `notDeleted`; UUID PKs; serialize `Decimal` with `toNumber()` in services
+- **RBAC**: update `ROLE_ROUTES`, `navigation.ts`, and page `requireRole` together
+- **Finish**: run `npm run build` after non-trivial changes
+- **Dev**: Docker-only on port **5173** — see `barberpro-docker-dev` rule
+- **Design**: follow `design-system/barberpro-pos/MASTER.md`; primary `#2563EB`, accent `#059669`

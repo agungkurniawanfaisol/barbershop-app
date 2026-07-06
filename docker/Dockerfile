@@ -17,8 +17,10 @@ ENV WATCHPACK_POLLING=true
 COPY --from=deps /app/node_modules ./node_modules
 COPY . .
 
-EXPOSE 3000
-CMD ["npm", "run", "dev", "--", "--hostname", "0.0.0.0", "--turbopack"]
+RUN npx prisma generate
+
+EXPOSE 5173
+CMD ["npm", "run", "dev:docker"]
 
 # ─── Builder ──────────────────────────────────────────────────────────────────
 FROM base AS builder
@@ -44,8 +46,8 @@ COPY --from=builder --chown=nextjs:nodejs /app/.next/static ./.next/static
 COPY --from=builder /app/app/generated ./app/generated
 
 USER nextjs
-EXPOSE 3000
-ENV PORT=3000
+EXPOSE 5173
+ENV PORT=5173
 ENV HOSTNAME="0.0.0.0"
 
 CMD ["node", "server.js"]

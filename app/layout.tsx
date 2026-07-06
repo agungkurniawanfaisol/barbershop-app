@@ -1,7 +1,7 @@
-import type { Metadata } from "next";
-import { Inter } from "next/font/google";
-import { AppProviders } from "@/providers/app-providers";
-import { APP_DESCRIPTION, APP_NAME } from "@/constants/routes";
+import type { Metadata, Viewport } from "next";
+import { Inter, Playfair_Display } from "next/font/google";
+import { AppProviders } from "@/providers";
+import { siteConfig } from "@/config/site";
 import "./globals.css";
 
 const inter = Inter({
@@ -10,12 +10,23 @@ const inter = Inter({
   display: "swap",
 });
 
+const playfair = Playfair_Display({
+  variable: "--font-display",
+  subsets: ["latin"],
+  display: "swap",
+});
+
 export const metadata: Metadata = {
   title: {
-    default: APP_NAME,
-    template: `%s | ${APP_NAME}`,
+    default: siteConfig.name,
+    template: `%s | ${siteConfig.name}`,
   },
-  description: APP_DESCRIPTION,
+  description: siteConfig.description,
+};
+
+export const viewport: Viewport = {
+  width: "device-width",
+  initialScale: 1,
 };
 
 export default function RootLayout({
@@ -25,7 +36,9 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en" suppressHydrationWarning className="h-full">
-      <body className={`${inter.variable} min-h-full font-sans antialiased`}>
+      <body
+        className={`${inter.variable} ${playfair.variable} min-h-full font-sans antialiased`}
+      >
         <AppProviders>{children}</AppProviders>
       </body>
     </html>
