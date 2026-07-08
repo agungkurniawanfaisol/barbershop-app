@@ -32,6 +32,10 @@ import { NativeSelect } from "@/components/forms/native-select";
 import { DeleteConfirmDialog } from "@/components/data/delete-confirm-dialog";
 import { DataTableCard } from "@/components/data/data-table-card";
 import {
+  MobileDataCard,
+  ResponsiveTable,
+} from "@/components/data/responsive-table";
+import {
   Table,
   TableBody,
   TableCell,
@@ -218,80 +222,131 @@ export function ExpenseManager({ expenses }: ExpenseManagerProps) {
       </div>
 
       <DataTableCard>
-        <Table>
-          <TableHeader>
-            <TableRow>
-              <TableHead>Tanggal</TableHead>
-              <TableHead>Judul</TableHead>
-              <TableHead className="hidden sm:table-cell">Kategori</TableHead>
-              <TableHead className="hidden md:table-cell">Dicatat</TableHead>
-              <TableHead className="text-right">Jumlah</TableHead>
-              <TableHead className="w-20" />
-            </TableRow>
-          </TableHeader>
-          <TableBody>
-            {expenses.map((expense) => (
-              <TableRow key={expense.id}>
-                <TableCell className="whitespace-nowrap">
-                  {formatDate(expense.expenseDate)}
-                </TableCell>
-                <TableCell>
+        <ResponsiveTable
+          className="p-4 md:p-0"
+          table={
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead>Tanggal</TableHead>
+                  <TableHead>Judul</TableHead>
+                  <TableHead className="hidden sm:table-cell">Kategori</TableHead>
+                  <TableHead className="hidden md:table-cell">Dicatat</TableHead>
+                  <TableHead className="text-right">Jumlah</TableHead>
+                  <TableHead className="w-20" />
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {expenses.map((expense) => (
+                  <TableRow key={expense.id}>
+                    <TableCell className="whitespace-nowrap">
+                      {formatDate(expense.expenseDate)}
+                    </TableCell>
+                    <TableCell>
+                      <div className="min-w-0">
+                        <p className="font-medium">{expense.title}</p>
+                        {expense.description && (
+                          <p className="mt-0.5 text-xs text-muted-foreground line-clamp-1">
+                            {expense.description}
+                          </p>
+                        )}
+                      </div>
+                    </TableCell>
+                    <TableCell className="hidden sm:table-cell">
+                      <Badge variant="secondary">
+                        {EXPENSE_CATEGORY_LABELS[
+                          expense.category as ExpenseCategory
+                        ] ?? expense.category}
+                      </Badge>
+                    </TableCell>
+                    <TableCell className="hidden md:table-cell">
+                      {expense.recordedByName}
+                    </TableCell>
+                    <TableCell className="text-right font-medium tabular-nums">
+                      {formatCurrency(expense.amount)}
+                    </TableCell>
+                    <TableCell>
+                      <div className="flex justify-end gap-1">
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          className="size-9 min-h-9 min-w-9"
+                          onClick={() => {
+                            setEditing(expense);
+                            setFormOpen(true);
+                          }}
+                          aria-label={`Edit ${expense.title}`}
+                        >
+                          <Pencil className="size-4" />
+                        </Button>
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          className="size-9 min-h-9 min-w-9"
+                          onClick={() => setDeleting(expense)}
+                          aria-label={`Delete ${expense.title}`}
+                        >
+                          <Trash2 className="size-4 text-destructive" />
+                        </Button>
+                      </div>
+                    </TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
+          }
+          mobile={expenses.map((expense) => (
+            <MobileDataCard key={expense.id}>
+              <div className="space-y-3">
+                <div className="flex items-start justify-between gap-3">
                   <div className="min-w-0">
                     <p className="font-medium">{expense.title}</p>
-                    <Badge variant="secondary" className="mt-1 sm:hidden">
+                    <p className="text-sm text-muted-foreground">
+                      {formatDate(expense.expenseDate)}
+                    </p>
+                    <Badge variant="secondary" className="mt-2">
                       {EXPENSE_CATEGORY_LABELS[
                         expense.category as ExpenseCategory
                       ] ?? expense.category}
                     </Badge>
-                    {expense.description && (
-                      <p className="mt-0.5 text-xs text-muted-foreground line-clamp-1">
+                    {expense.description ? (
+                      <p className="mt-2 text-xs text-muted-foreground line-clamp-2">
                         {expense.description}
                       </p>
-                    )}
+                    ) : null}
+                    <p className="mt-1 text-xs text-muted-foreground">
+                      Dicatat: {expense.recordedByName}
+                    </p>
                   </div>
-                </TableCell>
-                <TableCell className="hidden sm:table-cell">
-                  <Badge variant="secondary">
-                    {EXPENSE_CATEGORY_LABELS[
-                      expense.category as ExpenseCategory
-                    ] ?? expense.category}
-                  </Badge>
-                </TableCell>
-                <TableCell className="hidden md:table-cell">
-                  {expense.recordedByName}
-                </TableCell>
-                <TableCell className="text-right font-medium tabular-nums">
-                  {formatCurrency(expense.amount)}
-                </TableCell>
-                <TableCell>
-                  <div className="flex justify-end gap-1">
-                    <Button
-                      variant="ghost"
-                      size="icon"
-                      className="size-9 min-h-9 min-w-9"
-                      onClick={() => {
-                        setEditing(expense);
-                        setFormOpen(true);
-                      }}
-                      aria-label={`Edit ${expense.title}`}
-                    >
-                      <Pencil className="size-4" />
-                    </Button>
-                    <Button
-                      variant="ghost"
-                      size="icon"
-                      className="size-9 min-h-9 min-w-9"
-                      onClick={() => setDeleting(expense)}
-                      aria-label={`Delete ${expense.title}`}
-                    >
-                      <Trash2 className="size-4 text-destructive" />
-                    </Button>
-                  </div>
-                </TableCell>
-              </TableRow>
-            ))}
-          </TableBody>
-        </Table>
+                  <p className="shrink-0 text-right text-base font-semibold tabular-nums text-destructive">
+                    {formatCurrency(expense.amount)}
+                  </p>
+                </div>
+                <div className="flex gap-2">
+                  <Button
+                    variant="outline"
+                    className="min-h-11 flex-1"
+                    onClick={() => {
+                      setEditing(expense);
+                      setFormOpen(true);
+                    }}
+                  >
+                    <Pencil className="size-4" aria-hidden />
+                    Edit
+                  </Button>
+                  <Button
+                    variant="outline"
+                    className="min-h-11 flex-1 text-destructive hover:text-destructive"
+                    onClick={() => setDeleting(expense)}
+                  >
+                    <Trash2 className="size-4" aria-hidden />
+                    Hapus
+                  </Button>
+                </div>
+              </div>
+            </MobileDataCard>
+          ))}
+        />
       </DataTableCard>
 
       <ExpenseFormDialog

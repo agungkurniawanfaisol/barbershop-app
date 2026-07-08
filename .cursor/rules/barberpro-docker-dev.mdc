@@ -10,7 +10,8 @@ alwaysApply: true
 - Services: `app` + `redis` only (no Mailpit)
 - Inside compose, `REDIS_URL=redis://redis:6379` is set automatically
 - Rebuild after Dockerfile or dependency changes: `npm run docker:build`
-- If pages show 500 / client exception / dev server restarts: `npm run docker:reset` (clears `.next` volume)
+- Hot reload: source is bind-mounted (`.:/app`); watchers use polling (`WATCHPACK_POLLING`, `CHOKIDAR_USEPOLLING`) for WSL2/Docker
+- If edits are not picked up or pages show 500: `npm run docker:reset` (clears `.next` volume and rebuilds)
 - Docker dev uses webpack (`dev:docker`), not Turbopack — more stable on WSL bind mounts
 
 Do not document or default to port 3000 for this project.

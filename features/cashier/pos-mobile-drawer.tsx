@@ -31,7 +31,7 @@ export function PosMobileDrawer({
         role="dialog"
         aria-modal="true"
         aria-label={title}
-        className="absolute inset-x-0 bottom-0 flex max-h-[92dvh] flex-col overflow-hidden rounded-t-2xl bg-card shadow-2xl"
+        className="absolute inset-x-0 bottom-0 flex max-h-[92dvh] flex-col overflow-hidden rounded-t-2xl bg-card pb-safe shadow-2xl"
       >
         <div className="flex shrink-0 items-center justify-between border-b px-3 py-2">
           <div className="flex items-center gap-2">

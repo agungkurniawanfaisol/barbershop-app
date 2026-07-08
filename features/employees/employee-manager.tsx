@@ -28,6 +28,10 @@ import { NativeSelect } from "@/components/forms/native-select";
 import { PhoneInput } from "@/components/forms/phone-input";
 import { DeleteConfirmDialog } from "@/components/data/delete-confirm-dialog";
 import {
+  MobileDataCard,
+  ResponsiveTable,
+} from "@/components/data/responsive-table";
+import {
   Table,
   TableBody,
   TableCell,
@@ -314,64 +318,117 @@ export function EmployeeManager({
       </div>
 
       <div className="rounded-xl border">
-        <Table>
-          <TableHeader>
-            <TableRow>
-              <TableHead>Name</TableHead>
-              <TableHead>Role</TableHead>
-              <TableHead>Phone</TableHead>
-              <TableHead>Commission</TableHead>
-              <TableHead>Salary</TableHead>
-              <TableHead>Status</TableHead>
-              <TableHead className="w-24 text-right">Actions</TableHead>
-            </TableRow>
-          </TableHeader>
-          <TableBody>
-            {employees.map((employee) => (
-              <TableRow key={employee.id}>
-                <TableCell className="font-medium">{employee.name}</TableCell>
-                <TableCell>{ROLE_LABELS[employee.role as UserRole]}</TableCell>
-                <TableCell>{employee.phone ?? "—"}</TableCell>
-                <TableCell className="tabular-nums">
-                  {employee.commissionRate}%
-                </TableCell>
-                <TableCell className="tabular-nums">
-                  {formatCurrency(employee.salary)}
-                </TableCell>
-                <TableCell>
-                  <Badge variant={employee.isActive ? "default" : "secondary"}>
+        <ResponsiveTable
+          className="p-4 md:p-0"
+          table={
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead>Name</TableHead>
+                  <TableHead>Role</TableHead>
+                  <TableHead className="hidden sm:table-cell">Phone</TableHead>
+                  <TableHead>Commission</TableHead>
+                  <TableHead className="hidden md:table-cell">Salary</TableHead>
+                  <TableHead className="hidden sm:table-cell">Status</TableHead>
+                  <TableHead className="w-24 text-right">Actions</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {employees.map((employee) => (
+                  <TableRow key={employee.id}>
+                    <TableCell className="font-medium">{employee.name}</TableCell>
+                    <TableCell>{ROLE_LABELS[employee.role as UserRole]}</TableCell>
+                    <TableCell className="hidden sm:table-cell">
+                      {employee.phone ?? "—"}
+                    </TableCell>
+                    <TableCell className="tabular-nums">
+                      {employee.commissionRate}%
+                    </TableCell>
+                    <TableCell className="hidden tabular-nums md:table-cell">
+                      {formatCurrency(employee.salary)}
+                    </TableCell>
+                    <TableCell className="hidden sm:table-cell">
+                      <Badge variant={employee.isActive ? "default" : "secondary"}>
+                        {employee.isActive ? "Active" : "Inactive"}
+                      </Badge>
+                    </TableCell>
+                    <TableCell className="text-right">
+                      <div className="flex justify-end gap-1">
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          className="size-9 min-h-9 min-w-9"
+                          onClick={() => {
+                            setEditing(employee);
+                            setFormOpen(true);
+                          }}
+                          aria-label={`Edit ${employee.name}`}
+                        >
+                          <Pencil className="size-4" />
+                        </Button>
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          className="size-9 min-h-9 min-w-9"
+                          onClick={() => setDeleteTarget(employee)}
+                          aria-label={`Delete ${employee.name}`}
+                        >
+                          <Trash2 className="size-4 text-destructive" />
+                        </Button>
+                      </div>
+                    </TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
+          }
+          mobile={employees.map((employee) => (
+            <MobileDataCard key={employee.id}>
+              <div className="space-y-3">
+                <div className="flex items-start justify-between gap-3">
+                  <div className="min-w-0">
+                    <p className="truncate font-medium">{employee.name}</p>
+                    <p className="text-sm text-muted-foreground">
+                      {ROLE_LABELS[employee.role as UserRole]}
+                      {employee.phone ? ` · ${employee.phone}` : ""}
+                    </p>
+                    <p className="mt-1 text-xs text-muted-foreground">
+                      Komisi {employee.commissionRate}% · Gaji{" "}
+                      {formatCurrency(employee.salary)}
+                    </p>
+                  </div>
+                  <Badge
+                    variant={employee.isActive ? "default" : "secondary"}
+                    className="shrink-0"
+                  >
                     {employee.isActive ? "Active" : "Inactive"}
                   </Badge>
-                </TableCell>
-                <TableCell className="text-right">
-                  <div className="flex justify-end gap-1">
-                    <Button
-                      variant="ghost"
-                      size="icon"
-                      className="size-9 min-h-9 min-w-9"
-                      onClick={() => {
-                        setEditing(employee);
-                        setFormOpen(true);
-                      }}
-                      aria-label={`Edit ${employee.name}`}
-                    >
-                      <Pencil className="size-4" />
-                    </Button>
-                    <Button
-                      variant="ghost"
-                      size="icon"
-                      className="size-9 min-h-9 min-w-9"
-                      onClick={() => setDeleteTarget(employee)}
-                      aria-label={`Delete ${employee.name}`}
-                    >
-                      <Trash2 className="size-4 text-destructive" />
-                    </Button>
-                  </div>
-                </TableCell>
-              </TableRow>
-            ))}
-          </TableBody>
-        </Table>
+                </div>
+                <div className="flex gap-2">
+                  <Button
+                    variant="outline"
+                    className="min-h-11 flex-1"
+                    onClick={() => {
+                      setEditing(employee);
+                      setFormOpen(true);
+                    }}
+                  >
+                    <Pencil className="size-4" aria-hidden />
+                    Edit
+                  </Button>
+                  <Button
+                    variant="outline"
+                    className="min-h-11 flex-1 text-destructive hover:text-destructive"
+                    onClick={() => setDeleteTarget(employee)}
+                  >
+                    <Trash2 className="size-4" aria-hidden />
+                    Hapus
+                  </Button>
+                </div>
+              </div>
+            </MobileDataCard>
+          ))}
+        />
       </div>
 
       <EmployeeFormDialog

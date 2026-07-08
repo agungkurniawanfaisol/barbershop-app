@@ -107,6 +107,48 @@ export class CustomerRepository {
       select: { id: true, name: true },
     });
   }
+
+  async listRecentForPos(limit = 50) {
+    return prisma.customer.findMany({
+      where: notDeleted,
+      select: {
+        id: true,
+        name: true,
+        phone: true,
+        loyaltyPoints: true,
+      },
+      orderBy: [{ lastVisit: "desc" }, { visitCount: "desc" }, { name: "asc" }],
+      take: limit,
+    });
+  }
+
+  async searchForPos(query: string, limit = 8) {
+    const q = query.trim();
+    if (q.length < 2) return [];
+
+    const digits = q.replace(/\D/g, "");
+    const phoneQuery = digits.length >= 2 ? digits : null;
+
+    return prisma.customer.findMany({
+      where: {
+        ...notDeleted,
+        OR: [
+          { name: { contains: q, mode: "insensitive" } },
+          ...(phoneQuery
+            ? [{ phone: { contains: phoneQuery } }]
+            : [{ phone: { contains: q } }]),
+        ],
+      },
+      select: {
+        id: true,
+        name: true,
+        phone: true,
+        loyaltyPoints: true,
+      },
+      orderBy: [{ visitCount: "desc" }, { name: "asc" }],
+      take: limit,
+    });
+  }
 }
 
 export const customerRepository = new CustomerRepository();

@@ -18,6 +18,7 @@ export default async function CashierPage() {
       <PosPage
         services={bootstrap.services}
         barbers={bootstrap.barbers}
+        recentCustomers={bootstrap.recentCustomers}
         taxRate={taxRate}
         shopName={shopName}
         serviceCount={bootstrap.services.length}

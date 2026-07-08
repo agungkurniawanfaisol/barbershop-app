@@ -8,6 +8,10 @@ import { getReportTitle, reportTypes } from "@/constants/reports";
 import type { ReportType } from "@/schemas/report.schema";
 import { formatCurrency, formatDate } from "@/lib/format";
 import { exportReport } from "@/utils/export/report-export";
+import {
+  MobileDataCard,
+  ResponsiveTable,
+} from "@/components/data/responsive-table";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -128,7 +132,7 @@ export function ReportViewer({ report }: ReportViewerProps) {
         <div className="flex w-full flex-col gap-2 sm:w-auto sm:flex-row">
           <Button
             variant="outline"
-            className="min-h-9 w-full sm:w-auto"
+            className="min-h-11 w-full sm:min-h-9 sm:w-auto"
             onClick={() => exportReport(report, "csv")}
           >
             <Download className="size-4" aria-hidden />
@@ -136,7 +140,7 @@ export function ReportViewer({ report }: ReportViewerProps) {
           </Button>
           <Button
             variant="outline"
-            className="min-h-9 w-full sm:w-auto"
+            className="min-h-11 w-full sm:min-h-9 sm:w-auto"
             onClick={() => exportReport(report, "xlsx")}
           >
             <FileSpreadsheet className="size-4" aria-hidden />
@@ -144,7 +148,7 @@ export function ReportViewer({ report }: ReportViewerProps) {
           </Button>
           <Button
             variant="outline"
-            className="min-h-9 w-full sm:w-auto"
+            className="min-h-11 w-full sm:min-h-9 sm:w-auto"
             onClick={() => exportReport(report, "pdf")}
           >
             <FileText className="size-4" aria-hidden />
@@ -292,6 +296,8 @@ function TransactionsPreview({
 }: {
   report: Extract<ReportDataDto, { type: "transactions" }>;
 }) {
+  const rows = report.rows;
+
   return (
     <Card>
       <CardHeader>
@@ -300,41 +306,67 @@ function TransactionsPreview({
           Total {formatCurrency(report.totalAmount)}
         </CardDescription>
       </CardHeader>
-      <CardContent className="overflow-x-auto">
-        <Table>
-          <TableHeader>
-            <TableRow>
-              <TableHead>Number</TableHead>
-              <TableHead>Date</TableHead>
-              <TableHead>Customer</TableHead>
-              <TableHead>Payment</TableHead>
-              <TableHead className="text-right">Total</TableHead>
-            </TableRow>
-          </TableHeader>
-          <TableBody>
-            {report.rows.length === 0 ? (
-              <TableRow>
-                <TableCell colSpan={5} className="text-muted-foreground">
-                  No transactions in this period.
-                </TableCell>
-              </TableRow>
-            ) : (
-              report.rows.map((row) => (
-                <TableRow key={row.transactionNumber + row.date}>
-                  <TableCell className="font-mono text-xs">
-                    {row.transactionNumber}
-                  </TableCell>
-                  <TableCell className="whitespace-nowrap">{row.date}</TableCell>
-                  <TableCell>{row.customer}</TableCell>
-                  <TableCell>{row.paymentMethod}</TableCell>
-                  <TableCell className="text-right tabular-nums">
+      <CardContent>
+        {rows.length === 0 ? (
+          <p className="text-sm text-muted-foreground">
+            No transactions in this period.
+          </p>
+        ) : (
+          <ResponsiveTable
+            className="md:-mx-0"
+            table={
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead>Number</TableHead>
+                    <TableHead>Date</TableHead>
+                    <TableHead className="hidden sm:table-cell">Customer</TableHead>
+                    <TableHead className="hidden md:table-cell">Payment</TableHead>
+                    <TableHead className="text-right">Total</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {rows.map((row) => (
+                    <TableRow key={row.transactionNumber + row.date}>
+                      <TableCell className="font-mono text-xs">
+                        {row.transactionNumber}
+                      </TableCell>
+                      <TableCell className="whitespace-nowrap">{row.date}</TableCell>
+                      <TableCell className="hidden sm:table-cell">
+                        {row.customer}
+                      </TableCell>
+                      <TableCell className="hidden md:table-cell">
+                        {row.paymentMethod}
+                      </TableCell>
+                      <TableCell className="text-right tabular-nums">
+                        {formatCurrency(row.total)}
+                      </TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+            }
+            mobile={rows.map((row) => (
+              <MobileDataCard key={row.transactionNumber + row.date}>
+                <div className="flex items-start justify-between gap-3">
+                  <div className="min-w-0">
+                    <p className="font-mono text-xs font-medium">
+                      {row.transactionNumber}
+                    </p>
+                    <p className="text-sm text-muted-foreground">{row.date}</p>
+                    <p className="mt-1 text-sm">{row.customer}</p>
+                    <p className="text-xs text-muted-foreground">
+                      {row.paymentMethod}
+                    </p>
+                  </div>
+                  <p className="shrink-0 font-semibold tabular-nums">
                     {formatCurrency(row.total)}
-                  </TableCell>
-                </TableRow>
-              ))
-            )}
-          </TableBody>
-        </Table>
+                  </p>
+                </div>
+              </MobileDataCard>
+            ))}
+          />
+        )}
       </CardContent>
     </Card>
   );
@@ -345,6 +377,8 @@ function ExpensesPreview({
 }: {
   report: Extract<ReportDataDto, { type: "expenses" }>;
 }) {
+  const rows = report.rows;
+
   return (
     <Card>
       <CardHeader>
@@ -353,39 +387,64 @@ function ExpensesPreview({
           Total {formatCurrency(report.totalAmount)}
         </CardDescription>
       </CardHeader>
-      <CardContent className="overflow-x-auto">
-        <Table>
-          <TableHeader>
-            <TableRow>
-              <TableHead>Date</TableHead>
-              <TableHead>Title</TableHead>
-              <TableHead>Category</TableHead>
-              <TableHead>Recorded By</TableHead>
-              <TableHead className="text-right">Amount</TableHead>
-            </TableRow>
-          </TableHeader>
-          <TableBody>
-            {report.rows.length === 0 ? (
-              <TableRow>
-                <TableCell colSpan={5} className="text-muted-foreground">
-                  No expenses in this period.
-                </TableCell>
-              </TableRow>
-            ) : (
-              report.rows.map((row, index) => (
-                <TableRow key={`${row.date}-${row.title}-${index}`}>
-                  <TableCell>{formatDate(row.date)}</TableCell>
-                  <TableCell>{row.title}</TableCell>
-                  <TableCell>{row.category}</TableCell>
-                  <TableCell>{row.recordedBy}</TableCell>
-                  <TableCell className="text-right tabular-nums">
+      <CardContent>
+        {rows.length === 0 ? (
+          <p className="text-sm text-muted-foreground">
+            No expenses in this period.
+          </p>
+        ) : (
+          <ResponsiveTable
+            className="md:-mx-0"
+            table={
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead>Date</TableHead>
+                    <TableHead>Title</TableHead>
+                    <TableHead className="hidden sm:table-cell">Category</TableHead>
+                    <TableHead className="hidden md:table-cell">Recorded By</TableHead>
+                    <TableHead className="text-right">Amount</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {rows.map((row, index) => (
+                    <TableRow key={`${row.date}-${row.title}-${index}`}>
+                      <TableCell>{formatDate(row.date)}</TableCell>
+                      <TableCell>{row.title}</TableCell>
+                      <TableCell className="hidden sm:table-cell">
+                        {row.category}
+                      </TableCell>
+                      <TableCell className="hidden md:table-cell">
+                        {row.recordedBy}
+                      </TableCell>
+                      <TableCell className="text-right tabular-nums">
+                        {formatCurrency(row.amount)}
+                      </TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+            }
+            mobile={rows.map((row, index) => (
+              <MobileDataCard key={`${row.date}-${row.title}-${index}`}>
+                <div className="flex items-start justify-between gap-3">
+                  <div className="min-w-0">
+                    <p className="font-medium">{row.title}</p>
+                    <p className="text-sm text-muted-foreground">
+                      {formatDate(row.date)}
+                    </p>
+                    <p className="mt-1 text-xs text-muted-foreground">
+                      {row.category} · {row.recordedBy}
+                    </p>
+                  </div>
+                  <p className="shrink-0 font-semibold tabular-nums text-destructive">
                     {formatCurrency(row.amount)}
-                  </TableCell>
-                </TableRow>
-              ))
-            )}
-          </TableBody>
-        </Table>
+                  </p>
+                </div>
+              </MobileDataCard>
+            ))}
+          />
+        )}
       </CardContent>
     </Card>
   );

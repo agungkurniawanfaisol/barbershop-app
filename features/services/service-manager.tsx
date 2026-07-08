@@ -33,6 +33,10 @@ import { Switch } from "@/components/ui/switch";
 import { NativeSelect } from "@/components/forms/native-select";
 import { DeleteConfirmDialog } from "@/components/data/delete-confirm-dialog";
 import { DataTableCard } from "@/components/data/data-table-card";
+import {
+  MobileDataCard,
+  ResponsiveTable,
+} from "@/components/data/responsive-table";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import {
   Table,
@@ -143,11 +147,11 @@ export function ServiceManager({
   return (
     <>
       <Tabs defaultValue="services" className="w-full">
-        <TabsList className="grid h-auto w-full grid-cols-2 sm:inline-flex sm:w-auto">
-          <TabsTrigger value="services">
+        <TabsList className="grid h-auto min-h-11 w-full grid-cols-2 sm:inline-flex sm:w-auto">
+          <TabsTrigger value="services" className="min-h-11">
             Layanan ({total})
           </TabsTrigger>
-          <TabsTrigger value="categories">
+          <TabsTrigger value="categories" className="min-h-11">
             Kategori ({categories.length})
           </TabsTrigger>
         </TabsList>
@@ -163,65 +167,112 @@ export function ServiceManager({
             </Button>
           </div>
           <DataTableCard>
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead className="pl-4 sm:pl-6">Nama</TableHead>
-                  <TableHead className="hidden sm:table-cell">Kategori</TableHead>
-                  <TableHead>Harga</TableHead>
-                  <TableHead className="hidden md:table-cell">Durasi</TableHead>
-                  <TableHead className="hidden sm:table-cell">Status</TableHead>
-                  <TableHead className="w-20 pr-4 text-right sm:pr-6">Aksi</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {services.map((service) => (
-                  <TableRow key={service.id}>
-                    <TableCell className="max-w-[8rem] pl-4 font-medium sm:max-w-none sm:pl-6">
-                      {service.name}
-                    </TableCell>
-                    <TableCell className="hidden sm:table-cell">
-                      {service.categoryName ?? "—"}
-                    </TableCell>
-                    <TableCell className="tabular-nums">
-                      {formatCurrency(service.price)}
-                    </TableCell>
-                    <TableCell className="hidden md:table-cell">
-                      {service.durationMinutes} m
-                    </TableCell>
-                    <TableCell className="hidden sm:table-cell">
+            <ResponsiveTable
+              className="p-4 md:p-0"
+              table={
+                <Table>
+                  <TableHeader>
+                    <TableRow>
+                      <TableHead className="pl-4 sm:pl-6">Nama</TableHead>
+                      <TableHead className="hidden sm:table-cell">Kategori</TableHead>
+                      <TableHead>Harga</TableHead>
+                      <TableHead className="hidden md:table-cell">Durasi</TableHead>
+                      <TableHead className="hidden sm:table-cell">Status</TableHead>
+                      <TableHead className="w-20 pr-4 text-right sm:pr-6">Aksi</TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {services.map((service) => (
+                      <TableRow key={service.id}>
+                        <TableCell className="pl-4 font-medium sm:pl-6">
+                          {service.name}
+                        </TableCell>
+                        <TableCell className="hidden sm:table-cell">
+                          {service.categoryName ?? "—"}
+                        </TableCell>
+                        <TableCell className="tabular-nums">
+                          {formatCurrency(service.price)}
+                        </TableCell>
+                        <TableCell className="hidden md:table-cell">
+                          {service.durationMinutes} m
+                        </TableCell>
+                        <TableCell className="hidden sm:table-cell">
+                          <Badge
+                            variant={service.isActive ? "default" : "secondary"}
+                          >
+                            {service.isActive ? "Aktif" : "Nonaktif"}
+                          </Badge>
+                        </TableCell>
+                        <TableCell className="pr-4 text-right sm:pr-6">
+                          <div className="flex justify-end gap-1">
+                            <Button
+                              variant="ghost"
+                              size="icon"
+                              className="size-9 min-h-9 min-w-9"
+                              onClick={() => openServiceForm(service)}
+                              aria-label={`Edit ${service.name}`}
+                            >
+                              <Pencil className="size-4" />
+                            </Button>
+                            <Button
+                              variant="ghost"
+                              size="icon"
+                              className="size-9 min-h-9 min-w-9"
+                              onClick={() => setDeleteServiceTarget(service)}
+                              aria-label={`Delete ${service.name}`}
+                            >
+                              <Trash2 className="size-4 text-destructive" />
+                            </Button>
+                          </div>
+                        </TableCell>
+                      </TableRow>
+                    ))}
+                  </TableBody>
+                </Table>
+              }
+              mobile={services.map((service) => (
+                <MobileDataCard key={service.id}>
+                  <div className="space-y-3">
+                    <div className="flex items-start justify-between gap-3">
+                      <div className="min-w-0">
+                        <p className="font-medium">{service.name}</p>
+                        <p className="text-sm text-muted-foreground">
+                          {service.categoryName ?? "Tanpa kategori"} ·{" "}
+                          {service.durationMinutes} menit
+                        </p>
+                        <p className="mt-1 text-sm font-semibold tabular-nums text-primary">
+                          {formatCurrency(service.price)}
+                        </p>
+                      </div>
                       <Badge
                         variant={service.isActive ? "default" : "secondary"}
+                        className="shrink-0"
                       >
                         {service.isActive ? "Aktif" : "Nonaktif"}
                       </Badge>
-                    </TableCell>
-                    <TableCell className="pr-4 text-right sm:pr-6">
-                      <div className="flex justify-end gap-1">
-                        <Button
-                          variant="ghost"
-                          size="icon"
-                          className="size-9 min-h-9 min-w-9"
-                          onClick={() => openServiceForm(service)}
-                          aria-label={`Edit ${service.name}`}
-                        >
-                          <Pencil className="size-4" />
-                        </Button>
-                        <Button
-                          variant="ghost"
-                          size="icon"
-                          className="size-9 min-h-9 min-w-9"
-                          onClick={() => setDeleteServiceTarget(service)}
-                          aria-label={`Delete ${service.name}`}
-                        >
-                          <Trash2 className="size-4 text-destructive" />
-                        </Button>
-                      </div>
-                    </TableCell>
-                  </TableRow>
-                ))}
-              </TableBody>
-            </Table>
+                    </div>
+                    <div className="flex gap-2">
+                      <Button
+                        variant="outline"
+                        className="min-h-11 flex-1"
+                        onClick={() => openServiceForm(service)}
+                      >
+                        <Pencil className="size-4" aria-hidden />
+                        Edit
+                      </Button>
+                      <Button
+                        variant="outline"
+                        className="min-h-11 flex-1 text-destructive hover:text-destructive"
+                        onClick={() => setDeleteServiceTarget(service)}
+                      >
+                        <Trash2 className="size-4" aria-hidden />
+                        Hapus
+                      </Button>
+                    </div>
+                  </div>
+                </MobileDataCard>
+              ))}
+            />
           </DataTableCard>
         </TabsContent>
 
@@ -236,61 +287,106 @@ export function ServiceManager({
             </Button>
           </div>
           <DataTableCard>
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead>Name</TableHead>
-                  <TableHead>Sort</TableHead>
-                  <TableHead>Status</TableHead>
-                  <TableHead className="w-24 text-right">Actions</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {categories.map((category) => (
-                  <TableRow key={category.id}>
-                    <TableCell className="font-medium">
-                      {category.name}
-                    </TableCell>
-                    <TableCell>{category.sortOrder}</TableCell>
-                    <TableCell>
+            <ResponsiveTable
+              className="p-4 md:p-0"
+              table={
+                <Table>
+                  <TableHeader>
+                    <TableRow>
+                      <TableHead>Name</TableHead>
+                      <TableHead className="hidden sm:table-cell">Sort</TableHead>
+                      <TableHead>Status</TableHead>
+                      <TableHead className="w-24 text-right">Actions</TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {categories.map((category) => (
+                      <TableRow key={category.id}>
+                        <TableCell className="font-medium">
+                          {category.name}
+                        </TableCell>
+                        <TableCell className="hidden sm:table-cell">
+                          {category.sortOrder}
+                        </TableCell>
+                        <TableCell>
+                          <Badge
+                            variant={category.isActive ? "default" : "secondary"}
+                          >
+                            {category.isActive ? "Active" : "Inactive"}
+                          </Badge>
+                        </TableCell>
+                        <TableCell className="text-right">
+                          <div className="flex justify-end gap-1">
+                            <Button
+                              variant="ghost"
+                              size="icon"
+                              className="size-9 min-h-9 min-w-9"
+                              onClick={() => openCategoryForm(category)}
+                              aria-label={`Edit ${category.name}`}
+                            >
+                              <Pencil className="size-4" />
+                            </Button>
+                            <Button
+                              variant="ghost"
+                              size="icon"
+                              className="size-9 min-h-9 min-w-9"
+                              onClick={() => setDeleteCategoryTarget(category)}
+                              aria-label={`Delete ${category.name}`}
+                            >
+                              <Trash2 className="size-4 text-destructive" />
+                            </Button>
+                          </div>
+                        </TableCell>
+                      </TableRow>
+                    ))}
+                  </TableBody>
+                </Table>
+              }
+              mobile={categories.map((category) => (
+                <MobileDataCard key={category.id}>
+                  <div className="space-y-3">
+                    <div className="flex items-start justify-between gap-3">
+                      <div className="min-w-0">
+                        <p className="font-medium">{category.name}</p>
+                        <p className="text-sm text-muted-foreground">
+                          Urutan {category.sortOrder}
+                        </p>
+                      </div>
                       <Badge
                         variant={category.isActive ? "default" : "secondary"}
+                        className="shrink-0"
                       >
                         {category.isActive ? "Active" : "Inactive"}
                       </Badge>
-                    </TableCell>
-                    <TableCell className="text-right">
-                      <div className="flex justify-end gap-1">
-                        <Button
-                          variant="ghost"
-                          size="icon"
-                          className="size-9 min-h-9 min-w-9"
-                          onClick={() => openCategoryForm(category)}
-                          aria-label={`Edit ${category.name}`}
-                        >
-                          <Pencil className="size-4" />
-                        </Button>
-                        <Button
-                          variant="ghost"
-                          size="icon"
-                          className="size-9 min-h-9 min-w-9"
-                          onClick={() => setDeleteCategoryTarget(category)}
-                          aria-label={`Delete ${category.name}`}
-                        >
-                          <Trash2 className="size-4 text-destructive" />
-                        </Button>
-                      </div>
-                    </TableCell>
-                  </TableRow>
-                ))}
-              </TableBody>
-            </Table>
+                    </div>
+                    <div className="flex gap-2">
+                      <Button
+                        variant="outline"
+                        className="min-h-11 flex-1"
+                        onClick={() => openCategoryForm(category)}
+                      >
+                        <Pencil className="size-4" aria-hidden />
+                        Edit
+                      </Button>
+                      <Button
+                        variant="outline"
+                        className="min-h-11 flex-1 text-destructive hover:text-destructive"
+                        onClick={() => setDeleteCategoryTarget(category)}
+                      >
+                        <Trash2 className="size-4" aria-hidden />
+                        Hapus
+                      </Button>
+                    </div>
+                  </div>
+                </MobileDataCard>
+              ))}
+            />
           </DataTableCard>
         </TabsContent>
       </Tabs>
 
       <Dialog open={serviceFormOpen} onOpenChange={setServiceFormOpen}>
-        <DialogContent className="sm:max-w-lg">
+        <DialogContent className="max-h-[90vh] overflow-y-auto sm:max-w-lg">
           <DialogHeader>
             <DialogTitle>
               {editingService ? "Edit Service" : "Add Service"}
@@ -387,7 +483,7 @@ export function ServiceManager({
       </Dialog>
 
       <Dialog open={categoryFormOpen} onOpenChange={setCategoryFormOpen}>
-        <DialogContent className="sm:max-w-md">
+        <DialogContent className="max-h-[90vh] overflow-y-auto sm:max-w-md">
           <DialogHeader>
             <DialogTitle>
               {editingCategory ? "Edit Category" : "Add Category"}

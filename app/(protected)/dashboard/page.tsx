@@ -6,7 +6,7 @@ import { PageShell } from "@/components/layout/page-shell";
 import { DashboardWelcome } from "@/features/dashboard/dashboard-welcome";
 import { BarberDashboard } from "@/features/dashboard/barber-dashboard";
 import { MetricCards } from "@/features/dashboard/metric-cards";
-import { RevenueChart } from "@/features/dashboard/revenue-chart";
+import { RevenueChartLazy } from "@/features/dashboard/revenue-chart-lazy";
 import { RecentTransactions } from "@/features/dashboard/recent-transactions";
 import { DashboardSidebar } from "@/features/dashboard/dashboard-sidebar";
 
@@ -30,17 +30,19 @@ export default async function DashboardPage() {
 
   return (
     <PageShell>
-      <DashboardWelcome user={user} />
-      <MetricCards metrics={data.metrics} />
-      <div className="grid gap-4 lg:grid-cols-3 lg:gap-6">
-        <div className="space-y-4 lg:col-span-2 lg:space-y-4">
-          <RevenueChart data={data.revenueChart} />
-          <RecentTransactions transactions={data.recentTransactions} />
+      <div className="app-stagger-children space-y-4 lg:space-y-6">
+        <DashboardWelcome user={user} />
+        <MetricCards metrics={data.metrics} />
+        <div className="grid gap-4 lg:grid-cols-3 lg:gap-6">
+          <div className="space-y-4 lg:col-span-2 lg:space-y-4">
+            <RevenueChartLazy data={data.revenueChart} />
+            <RecentTransactions transactions={data.recentTransactions} />
+          </div>
+          <DashboardSidebar
+            paymentBreakdown={data.paymentBreakdown}
+            topServices={data.topServices}
+          />
         </div>
-        <DashboardSidebar
-          paymentBreakdown={data.paymentBreakdown}
-          topServices={data.topServices}
-        />
       </div>
     </PageShell>
   );

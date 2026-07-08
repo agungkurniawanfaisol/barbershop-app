@@ -86,7 +86,7 @@ export function ServiceGrid({ services }: ServiceGridProps) {
             type="button"
             onClick={() => setCategoryFilter(cat)}
             className={cn(
-              "shrink-0 rounded-full px-2.5 py-1 text-xs font-medium transition-all",
+              "shrink-0 rounded-full px-4 py-2.5 text-sm font-medium transition-all min-h-11",
               categoryFilter === cat
                 ? "bg-primary text-primary-foreground"
                 : "bg-card text-muted-foreground ring-1 ring-border hover:text-foreground",
@@ -116,7 +116,7 @@ export function ServiceGrid({ services }: ServiceGridProps) {
                   {categoryItems.length}
                 </span>
               </div>
-              <div className="grid grid-cols-2 gap-2 md:grid-cols-3 lg:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4">
+              <div className="grid grid-cols-2 gap-2 lg:grid-cols-2 xl:grid-cols-2 2xl:grid-cols-3">
                 {categoryItems.map((service) => {
                   const qty = getCartQty(service.id);
                   return (

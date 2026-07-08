@@ -27,6 +27,10 @@ import { NativeSelect } from "@/components/forms/native-select";
 import { Badge } from "@/components/ui/badge";
 import { DataTableCard } from "@/components/data/data-table-card";
 import {
+  MobileDataCard,
+  ResponsiveTable,
+} from "@/components/data/responsive-table";
+import {
   Table,
   TableBody,
   TableCell,
@@ -111,7 +115,7 @@ function UserFormDialog({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-md">
+      <DialogContent className="max-h-[90vh] overflow-y-auto sm:max-w-md">
         <DialogHeader>
           <DialogTitle>{isEdit ? "Edit User" : "Invite User"}</DialogTitle>
           <DialogDescription>
@@ -232,63 +236,100 @@ export function UserManager({ users, currentUserId }: UserManagerProps) {
       </div>
 
       <DataTableCard>
-        <Table>
-          <TableHeader>
-            <TableRow>
-              <TableHead>Nama</TableHead>
-              <TableHead className="hidden sm:table-cell">Email</TableHead>
-              <TableHead>Peran</TableHead>
-              <TableHead className="hidden md:table-cell">Status</TableHead>
-              <TableHead className="hidden lg:table-cell">Bergabung</TableHead>
-              <TableHead className="w-14" />
-            </TableRow>
-          </TableHeader>
-          <TableBody>
-            {users.map((user) => (
-              <TableRow key={user.id}>
-                <TableCell>
+        <ResponsiveTable
+          className="p-4 md:p-0"
+          table={
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead>Nama</TableHead>
+                  <TableHead className="hidden sm:table-cell">Email</TableHead>
+                  <TableHead>Peran</TableHead>
+                  <TableHead className="hidden md:table-cell">Status</TableHead>
+                  <TableHead className="hidden lg:table-cell">Bergabung</TableHead>
+                  <TableHead className="w-14" />
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {users.map((user) => (
+                  <TableRow key={user.id}>
+                    <TableCell>
+                      <p className="truncate font-medium">{user.fullName}</p>
+                    </TableCell>
+                    <TableCell className="hidden max-w-[12rem] truncate sm:table-cell">
+                      {user.email}
+                    </TableCell>
+                    <TableCell>
+                      <Badge variant="secondary">
+                        {ROLE_LABELS[user.role as keyof typeof ROLE_LABELS] ??
+                          user.role}
+                      </Badge>
+                    </TableCell>
+                    <TableCell className="hidden md:table-cell">
+                      <Badge variant={user.isActive ? "default" : "outline"}>
+                        {user.isActive ? "Aktif" : "Nonaktif"}
+                      </Badge>
+                    </TableCell>
+                    <TableCell className="hidden whitespace-nowrap text-sm text-muted-foreground lg:table-cell">
+                      {formatDate(user.createdAt)}
+                    </TableCell>
+                    <TableCell>
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        className="size-9 min-h-9 min-w-9"
+                        onClick={() => {
+                          setEditing(user);
+                          setFormOpen(true);
+                        }}
+                        aria-label={`Edit ${user.fullName}`}
+                      >
+                        <Pencil className="size-4" />
+                      </Button>
+                    </TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
+          }
+          mobile={users.map((user) => (
+            <MobileDataCard key={user.id}>
+              <div className="space-y-3">
+                <div className="flex items-start justify-between gap-3">
                   <div className="min-w-0">
                     <p className="truncate font-medium">{user.fullName}</p>
-                    <p className="truncate text-xs text-muted-foreground sm:hidden">
+                    <p className="truncate text-sm text-muted-foreground">
                       {user.email}
                     </p>
+                    <p className="mt-1 text-xs text-muted-foreground">
+                      Bergabung {formatDate(user.createdAt)}
+                    </p>
                   </div>
-                </TableCell>
-                <TableCell className="hidden max-w-[12rem] truncate sm:table-cell">
-                  {user.email}
-                </TableCell>
-                <TableCell>
-                  <Badge variant="secondary">
-                    {ROLE_LABELS[user.role as keyof typeof ROLE_LABELS] ??
-                      user.role}
-                  </Badge>
-                </TableCell>
-                <TableCell className="hidden md:table-cell">
-                  <Badge variant={user.isActive ? "default" : "outline"}>
-                    {user.isActive ? "Aktif" : "Nonaktif"}
-                  </Badge>
-                </TableCell>
-                <TableCell className="hidden whitespace-nowrap text-sm text-muted-foreground lg:table-cell">
-                  {formatDate(user.createdAt)}
-                </TableCell>
-                <TableCell>
-                  <Button
-                    variant="ghost"
-                    size="icon"
-                    className="size-9 min-h-9 min-w-9"
-                    onClick={() => {
-                      setEditing(user);
-                      setFormOpen(true);
-                    }}
-                    aria-label={`Edit ${user.fullName}`}
-                  >
-                    <Pencil className="size-4" />
-                  </Button>
-                </TableCell>
-              </TableRow>
-            ))}
-          </TableBody>
-        </Table>
+                  <div className="flex shrink-0 flex-col items-end gap-1">
+                    <Badge variant="secondary">
+                      {ROLE_LABELS[user.role as keyof typeof ROLE_LABELS] ??
+                        user.role}
+                    </Badge>
+                    <Badge variant={user.isActive ? "default" : "outline"}>
+                      {user.isActive ? "Aktif" : "Nonaktif"}
+                    </Badge>
+                  </div>
+                </div>
+                <Button
+                  variant="outline"
+                  className="min-h-11 w-full"
+                  onClick={() => {
+                    setEditing(user);
+                    setFormOpen(true);
+                  }}
+                >
+                  <Pencil className="size-4" aria-hidden />
+                  Edit
+                </Button>
+              </div>
+            </MobileDataCard>
+          ))}
+        />
       </DataTableCard>
 
       <UserFormDialog

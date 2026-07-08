@@ -62,8 +62,11 @@ function serializeRecentTransaction(
     taxPercent: toNumber(tx.taxPercent),
     total: toNumber(tx.total),
     paymentMethod: tx.paymentMethod,
+    cashPaid: tx.cashPaid != null ? toNumber(tx.cashPaid) : null,
+    changeAmount: tx.changeAmount != null ? toNumber(tx.changeAmount) : null,
     status: tx.status,
     notes: tx.notes,
+    whatsappSentAt: tx.whatsappSentAt?.toISOString() ?? null,
     paidAt: tx.paidAt.toISOString(),
     items: tx.items.map((item) => ({
       id: item.id,

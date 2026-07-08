@@ -41,7 +41,6 @@ export const ROLE_ROUTES: Record<UserRole, string[]> = {
     "/dashboard",
     "/cashier",
     "/customers",
-    "/services",
     "/transactions",
   ],
   [UserRole.BARBER]: [ROUTES.dashboard, ROUTES.myEarnings],

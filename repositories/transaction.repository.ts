@@ -1,11 +1,60 @@
-import { format } from "date-fns";
+import { format, endOfDay, startOfDay, subDays, eachDayOfInterval } from "date-fns";
 import { prisma } from "@/lib/prisma";
 import { notDeleted } from "@/repositories/base.repository";
-import type { PaginationInput } from "@/schemas/common.schema";
+import { toNumber } from "@/lib/format";
+import type { TransactionListFilterInput } from "@/schemas/transaction.schema";
 import type { CheckoutInput } from "@/schemas/transaction.schema";
 import type { PaymentMethod } from "@/app/generated/prisma/client";
 import { calculatePosTotals } from "@/utils/pos-calculations";
 import { calculateBarberCommission } from "@/utils/barber-commission";
+
+const COMPLETED = {
+  ...notDeleted,
+  status: "COMPLETED" as const,
+};
+
+function buildTransactionWhere(params: Pick<
+  TransactionListFilterInput,
+  "search" | "paymentMethod" | "from" | "to" | "barberId" | "whatsapp"
+>) {
+  const { search, paymentMethod, from, to, barberId, whatsapp } = params;
+
+  return {
+    ...COMPLETED,
+    ...(paymentMethod ? { paymentMethod: paymentMethod as PaymentMethod } : {}),
+    ...(barberId ? { barberId } : {}),
+    ...(from || to
+      ? {
+          paidAt: {
+            ...(from ? { gte: startOfDay(new Date(from)) } : {}),
+            ...(to ? { lte: endOfDay(new Date(to)) } : {}),
+          },
+        }
+      : {}),
+    ...(whatsapp === "sent"
+      ? { whatsappSentAt: { not: null } }
+      : whatsapp === "not_sent"
+        ? { whatsappSentAt: null }
+        : {}),
+    ...(search
+      ? {
+          OR: [
+            {
+              transactionNumber: {
+                contains: search,
+                mode: "insensitive" as const,
+              },
+            },
+            {
+              customer: {
+                name: { contains: search, mode: "insensitive" as const },
+              },
+            },
+          ],
+        }
+      : {}),
+  };
+}
 
 async function generateTransactionNumber(): Promise<string> {
   const today = format(new Date(), "yyyyMMdd");
@@ -20,28 +69,9 @@ async function generateTransactionNumber(): Promise<string> {
 }
 
 export class TransactionRepository {
-  async findMany(params: PaginationInput) {
-    const { page, limit, search } = params;
-    const where = {
-      ...notDeleted,
-      ...(search
-        ? {
-            OR: [
-              {
-                transactionNumber: {
-                  contains: search,
-                  mode: "insensitive" as const,
-                },
-              },
-              {
-                customer: {
-                  name: { contains: search, mode: "insensitive" as const },
-                },
-              },
-            ],
-          }
-        : {}),
-    };
+  async findMany(params: TransactionListFilterInput) {
+    const { page, limit, sortBy, sortOrder } = params;
+    const where = buildTransactionWhere(params);
 
     const [data, total] = await Promise.all([
       prisma.transaction.findMany({
@@ -52,7 +82,7 @@ export class TransactionRepository {
           cashier: true,
           items: { where: notDeleted },
         },
-        orderBy: { paidAt: "desc" },
+        orderBy: { [sortBy]: sortOrder },
         skip: (page - 1) * limit,
         take: limit,
       }),
@@ -60,6 +90,67 @@ export class TransactionRepository {
     ]);
 
     return { data, total, page, limit, totalPages: Math.ceil(total / limit) };
+  }
+
+  async getRevenueChartData(
+    params: Pick<
+      TransactionListFilterInput,
+      | "paymentMethod"
+      | "from"
+      | "to"
+      | "barberId"
+      | "whatsapp"
+      | "search"
+    >,
+  ) {
+    const end = params.to ? endOfDay(new Date(params.to)) : new Date();
+    const start = params.from
+      ? startOfDay(new Date(params.from))
+      : startOfDay(subDays(end, 29));
+
+    const where = {
+      ...buildTransactionWhere({ ...params, whatsapp: params.whatsapp ?? "all" }),
+      paidAt: { gte: start, lte: end },
+    };
+
+    const rows = await prisma.transaction.findMany({
+      where,
+      select: { paidAt: true, total: true },
+      orderBy: { paidAt: "asc" },
+    });
+
+    const revenueByDate = new Map<string, { revenue: number; count: number }>();
+    for (const day of eachDayOfInterval({ start, end })) {
+      revenueByDate.set(format(day, "yyyy-MM-dd"), { revenue: 0, count: 0 });
+    }
+
+    for (const row of rows) {
+      const key = format(row.paidAt, "yyyy-MM-dd");
+      const current = revenueByDate.get(key) ?? { revenue: 0, count: 0 };
+      revenueByDate.set(key, {
+        revenue: current.revenue + toNumber(row.total),
+        count: current.count + 1,
+      });
+    }
+
+    return Array.from(revenueByDate.entries()).map(([date, point]) => ({
+      date,
+      revenue: point.revenue,
+      count: point.count,
+    }));
+  }
+
+  async markWhatsAppSent(id: string) {
+    return prisma.transaction.update({
+      where: { id },
+      data: { whatsappSentAt: new Date() },
+      include: {
+        customer: true,
+        barber: true,
+        cashier: true,
+        items: { where: notDeleted },
+      },
+    });
   }
 
   async findById(id: string) {
@@ -74,7 +165,11 @@ export class TransactionRepository {
     });
   }
 
-  async createCheckout(input: CheckoutInput, cashierId: string) {
+  async createCheckout(
+    input: CheckoutInput,
+    cashierId: string,
+    cash: { cashPaid: number | null; changeAmount: number | null },
+  ) {
     const totals = calculatePosTotals(input);
     const transactionNumber = await generateTransactionNumber();
 
@@ -114,6 +209,8 @@ export class TransactionRepository {
           barberCommissionRate,
           barberCommissionAmount,
           paymentMethod: input.paymentMethod as PaymentMethod,
+          cashPaid: cash.cashPaid,
+          changeAmount: cash.changeAmount,
           notes: input.notes ?? null,
           items: {
             create: input.items.map((item) => ({

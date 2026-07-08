@@ -1,12 +1,7 @@
 import { formatCurrency, formatDateTime } from "@/lib/format";
 import type { TransactionDto } from "@/services/transaction.service";
 
-const PAYMENT_LABELS: Record<string, string> = {
-  CASH: "Cash",
-  QRIS: "QRIS",
-  DEBIT: "Debit Card",
-  TRANSFER: "Bank Transfer",
-};
+import { PAYMENT_LABELS } from "@/constants/payments";
 
 type ReceiptTemplateProps = {
   transaction: TransactionDto;
@@ -102,6 +97,23 @@ export function ReceiptTemplate({
             <span className="text-muted-foreground">Payment</span>
             <span>{PAYMENT_LABELS[transaction.paymentMethod] ?? transaction.paymentMethod}</span>
           </div>
+          {transaction.paymentMethod === "CASH" &&
+            transaction.cashPaid != null && (
+              <>
+                <div className="flex justify-between">
+                  <span className="text-muted-foreground">Bayar</span>
+                  <span className="tabular-nums">
+                    {formatCurrency(transaction.cashPaid)}
+                  </span>
+                </div>
+                <div className="flex justify-between font-medium">
+                  <span className="text-muted-foreground">Kembalian</span>
+                  <span className="tabular-nums">
+                    {formatCurrency(transaction.changeAmount ?? 0)}
+                  </span>
+                </div>
+              </>
+            )}
         </div>
 
         {transaction.notes && (

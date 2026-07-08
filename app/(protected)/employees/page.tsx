@@ -5,6 +5,9 @@ import { employeeService } from "@/services/employee.service";
 import { settingService } from "@/services/setting.service";
 import { paginationSchema } from "@/schemas/common.schema";
 import { EmployeeManager } from "@/features/employees/employee-manager";
+import { PageShell } from "@/components/layout/page-shell";
+import { PageHeader } from "@/components/layout/page-header";
+import { PageToolbar } from "@/components/layout/page-toolbar";
 import { SearchInput } from "@/components/data/search-input";
 import { PaginationControls } from "@/components/data/pagination-controls";
 import { EmptyState } from "@/components/data/empty-state";
@@ -39,16 +42,13 @@ export default async function EmployeesPage({
   );
 
   return (
-    <div className="mx-auto max-w-7xl space-y-4">
-      <div>
-        <h2 className="text-2xl font-bold tracking-tight">Employees</h2>
-        <p className="text-muted-foreground">
-          Manage staff, roles, commissions, and salaries.
-        </p>
-      </div>
+    <PageShell>
+      <PageHeader description="Kelola staf, peran, komisi, dan gaji." />
 
-      <Suspense fallback={<Skeleton className="h-8 max-w-sm" />}>
-        <SearchInput placeholder="Search by name, email, or phone…" />
+      <Suspense fallback={<Skeleton className="h-10 w-full max-w-md" />}>
+        <PageToolbar>
+          <SearchInput placeholder="Cari nama, email, atau telepon…" />
+        </PageToolbar>
       </Suspense>
 
       {result.data.length === 0 ? (
@@ -68,6 +68,6 @@ export default async function EmployeesPage({
       <Suspense fallback={null}>
         <PaginationControls page={result.page} totalPages={result.totalPages} />
       </Suspense>
-    </div>
+    </PageShell>
   );
 }

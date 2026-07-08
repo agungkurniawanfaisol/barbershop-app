@@ -18,7 +18,7 @@ import type {
   ServiceDto,
 } from "@/services/service.service";
 
-const SERVICE_ROLES = [UserRole.ADMIN, UserRole.MANAGER, UserRole.CASHIER];
+const SERVICE_ROLES = [UserRole.ADMIN, UserRole.MANAGER];
 
 export async function getServicesAction(
   searchParams: Record<string, string | undefined>,

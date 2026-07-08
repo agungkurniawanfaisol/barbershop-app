@@ -13,7 +13,11 @@ export default async function ProtectedLayout({
 
   const authUser = await getAuthUser();
   if (authUser) {
-    await authService.syncUser(authUser);
+    try {
+      await authService.syncUser(authUser);
+    } catch (error) {
+      console.error("Failed to sync user profile:", error);
+    }
   }
 
   return (
@@ -24,7 +28,7 @@ export default async function ProtectedLayout({
 
       <div className="flex min-h-0 min-w-0 flex-1 flex-col overflow-hidden">
         <AppHeader user={user} />
-        <main className="flex min-h-0 flex-1 flex-col overflow-x-hidden overflow-y-auto overscroll-contain bg-muted/30 p-2 sm:p-3 lg:p-4">
+        <main className="app-main-scroll flex min-h-0 flex-1 flex-col overflow-x-hidden overflow-y-auto overscroll-contain bg-muted/30 p-2 sm:p-3 lg:p-4">
           <div className="mx-auto flex w-full min-w-0 min-h-0 flex-1 flex-col">
             {children}
           </div>

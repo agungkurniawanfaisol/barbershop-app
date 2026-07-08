@@ -50,7 +50,7 @@ function formatMetricValue(metric: DashboardMetricDto): string {
 
 export function MetricCards({ metrics }: MetricCardsProps) {
   return (
-    <div className="grid grid-cols-2 gap-3 lg:grid-cols-4 lg:gap-4">
+    <div className="grid max-[360px]:grid-cols-1 grid-cols-2 gap-3 lg:grid-cols-4 lg:gap-4">
       {metrics.map((metric) => {
         const config = METRIC_CONFIG[metric.label] ?? METRIC_CONFIG["Daily Revenue"]!;
         const Icon = config.icon;

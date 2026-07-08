@@ -21,7 +21,7 @@ type ServicesPageProps = {
 export default async function ServicesPage({
   searchParams,
 }: ServicesPageProps) {
-  await requireRole([UserRole.ADMIN, UserRole.MANAGER, UserRole.CASHIER]);
+  await requireRole([UserRole.ADMIN, UserRole.MANAGER]);
 
   const raw = await searchParams;
   const params = paginationSchema.parse(raw);

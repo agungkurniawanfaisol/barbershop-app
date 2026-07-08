@@ -141,21 +141,12 @@ export function LandingHeader() {
           <Link
             href={ROUTES.login}
             className={cn(
-              buttonVariants({ variant: "ghost", size: "sm" }),
-              "hidden min-h-10 cursor-pointer sm:inline-flex",
-              overStorefront && "text-white hover:bg-white/10 hover:text-white",
+              buttonVariants({ size: "sm" }),
+              "landing-shine min-h-10 cursor-pointer bg-accent text-accent-foreground shadow-md shadow-accent/20 hover:bg-accent/90",
+              overStorefront && "ring-1 ring-white/20",
             )}
           >
             Masuk
-          </Link>
-          <Link
-            href={ROUTES.login}
-            className={cn(
-              buttonVariants({ size: "sm" }),
-              "landing-shine min-h-10 cursor-pointer bg-accent text-accent-foreground shadow-md shadow-accent/20 hover:bg-accent/90",
-            )}
-          >
-            Mulai
           </Link>
         </div>
       </div>

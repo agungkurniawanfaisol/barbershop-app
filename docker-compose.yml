@@ -7,6 +7,7 @@ services:
     container_name: barberpro-app
     ports:
       - "5173:5173"
+    init: true
     volumes:
       - .:/app
       - /app/node_modules
@@ -15,7 +16,11 @@ services:
       - NODE_ENV=development
       - PORT=5173
       - NEXT_PUBLIC_APP_URL=http://localhost:5173
+      # Polling required for file watching on WSL2 / Docker bind mounts
       - WATCHPACK_POLLING=true
+      - WATCHPACK_POLLING_INTERVAL=1000
+      - CHOKIDAR_USEPOLLING=true
+      - CHOKIDAR_INTERVAL=1000
       - REDIS_URL=redis://redis:6379
     env_file:
       - .env

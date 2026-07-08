@@ -431,6 +431,12 @@ async function main() {
           const subtotal = service.price;
           const taxAmount = Math.round(subtotal * (taxPercent / 100));
           const total = subtotal + taxAmount;
+          const cashPaid =
+            paymentMethod === "CASH"
+              ? Math.ceil(total / 50_000) * 50_000
+              : null;
+          const changeAmount =
+            cashPaid != null ? cashPaid - total : null;
           const paidAt = setMinutes(
             setHours(subDays(new Date(), dayOffset), 10 + t * 2),
             15 + t * 10,
@@ -450,6 +456,8 @@ async function main() {
               taxPercent,
               total,
               paymentMethod,
+              cashPaid,
+              changeAmount,
               status: "COMPLETED",
               paidAt,
               items: {

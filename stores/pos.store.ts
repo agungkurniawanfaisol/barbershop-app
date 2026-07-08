@@ -1,5 +1,6 @@
 import { create } from "zustand";
 import type { CartItemInput } from "@/schemas/transaction.schema";
+import type { PosPaymentMethod } from "@/constants/payments";
 import type {
   PosBarberDto,
   PosCustomerDto,
@@ -7,8 +8,6 @@ import type {
   TransactionDto,
 } from "@/services/transaction.service";
 import { calculatePosTotals } from "@/utils/pos-calculations";
-
-type PaymentMethod = "CASH" | "QRIS" | "DEBIT" | "TRANSFER";
 
 type PosState = {
   items: CartItemInput[];
@@ -19,7 +18,8 @@ type PosState = {
   discountPercent: number;
   taxPercent: number;
   notes: string;
-  paymentMethod: PaymentMethod;
+  paymentMethod: PosPaymentMethod;
+  cashPaid: number;
   serviceSearch: string;
   lastTransaction: TransactionDto | null;
   receiptOpen: boolean;
@@ -34,7 +34,8 @@ type PosState = {
   setDiscountPercent: (percent: number) => void;
   setTaxPercent: (percent: number) => void;
   setNotes: (notes: string) => void;
-  setPaymentMethod: (method: PaymentMethod) => void;
+  setPaymentMethod: (method: PosPaymentMethod) => void;
+  setCashPaid: (amount: number) => void;
   setServiceSearch: (search: string) => void;
   setLastTransaction: (transaction: TransactionDto | null) => void;
   setReceiptOpen: (open: boolean) => void;
@@ -49,7 +50,8 @@ const initialCheckout = {
   discountAmount: 0,
   discountPercent: 0,
   notes: "",
-  paymentMethod: "CASH" as PaymentMethod,
+  paymentMethod: "CASH" as PosPaymentMethod,
+  cashPaid: 0,
 };
 
 export const usePosStore = create<PosState>((set, get) => ({
@@ -111,7 +113,13 @@ export const usePosStore = create<PosState>((set, get) => ({
     set({ discountPercent, discountAmount: 0 }),
   setTaxPercent: (taxPercent) => set({ taxPercent }),
   setNotes: (notes) => set({ notes }),
-  setPaymentMethod: (paymentMethod) => set({ paymentMethod }),
+  setPaymentMethod: (paymentMethod) =>
+    set(
+      paymentMethod === "QRIS"
+        ? { paymentMethod, cashPaid: 0 }
+        : { paymentMethod },
+    ),
+  setCashPaid: (cashPaid) => set({ cashPaid }),
   setServiceSearch: (serviceSearch) => set({ serviceSearch }),
   setLastTransaction: (lastTransaction) => set({ lastTransaction }),
   setReceiptOpen: (receiptOpen) => set({ receiptOpen }),

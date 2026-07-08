@@ -53,7 +53,8 @@ export function RevenueChart({ data }: RevenueChartProps) {
                 tickLine={false}
                 axisLine={false}
                 tickMargin={10}
-                minTickGap={32}
+                minTickGap={48}
+                interval="preserveStartEnd"
                 tickFormatter={(value: string) =>
                   format(parseISO(value), "d/M")
                 }

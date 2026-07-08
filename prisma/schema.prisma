@@ -258,8 +258,11 @@ model Transaction {
   barberCommissionRate   Decimal?       @map("barber_commission_rate") @db.Decimal(5, 2)
   barberCommissionAmount Decimal?       @map("barber_commission_amount") @db.Decimal(12, 2)
   paymentMethod     PaymentMethod     @map("payment_method")
+  cashPaid          Decimal?          @map("cash_paid") @db.Decimal(12, 2)
+  changeAmount      Decimal?          @map("change_amount") @db.Decimal(12, 2)
   status            TransactionStatus @default(COMPLETED)
   notes             String?
+  whatsappSentAt    DateTime?         @map("whatsapp_sent_at")
   paidAt            DateTime          @default(now()) @map("paid_at")
   createdAt         DateTime          @default(now()) @map("created_at")
   updatedAt         DateTime          @updatedAt @map("updated_at")

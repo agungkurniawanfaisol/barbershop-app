@@ -6,9 +6,10 @@ import {
   PanelLeftOpen,
   Scissors,
 } from "lucide-react";
+import { memo } from "react";
 import { usePathname } from "next/navigation";
-import { getNavItemsForRole, type NavItem } from "@/constants/navigation";
-import { APP_NAME, ROUTES } from "@/constants/routes";
+import { getNavItemsForRole, NAV_GROUPS, type NavItem } from "@/constants/navigation";
+import { APP_NAME } from "@/constants/routes";
 import { ROLE_LABELS, UserRole } from "@/constants/roles";
 import type { SessionUser } from "@/types/auth";
 import { useUiStore } from "@/stores/ui.store";
@@ -21,35 +22,6 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
-
-type NavGroup = {
-  label: string;
-  hrefs: string[];
-};
-
-const NAV_GROUPS: NavGroup[] = [
-  {
-    label: "Utama",
-    hrefs: [ROUTES.dashboard, ROUTES.cashier, ROUTES.myEarnings],
-  },
-  {
-    label: "Operasional",
-    hrefs: [
-      ROUTES.customers,
-      ROUTES.employees,
-      ROUTES.services,
-      ROUTES.transactions,
-    ],
-  },
-  {
-    label: "Keuangan",
-    hrefs: [ROUTES.expenses, ROUTES.reports],
-  },
-  {
-    label: "Administrasi",
-    hrefs: [ROUTES.users, ROUTES.audit, ROUTES.settings],
-  },
-];
 
 function groupNavItems(items: NavItem[]): { label: string; items: NavItem[] }[] {
   const hrefSet = new Set(items.map((item) => item.href));
@@ -71,7 +43,7 @@ type SidebarNavItemProps = {
   onNavigate?: () => void;
 };
 
-function SidebarNavItem({
+const SidebarNavItem = memo(function SidebarNavItem({
   item,
   groupLabel,
   isActive,
@@ -131,7 +103,7 @@ function SidebarNavItem({
       </TooltipContent>
     </Tooltip>
   );
-}
+});
 
 type AppSidebarProps = {
   user: SessionUser;

@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { Eye } from "lucide-react";
+import { Eye, MessageCircle } from "lucide-react";
 import type { TransactionDto } from "@/services/transaction.service";
 import { formatCurrency, formatDateTime } from "@/lib/format";
 import { Button } from "@/components/ui/button";
@@ -18,25 +18,31 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-} from "@/components/ui/dialog";
-import { ReceiptTemplate } from "@/components/receipt/receipt-template";
+import { TransactionDetailDialog } from "@/features/transactions/transaction-detail-dialog";
 
-const PAYMENT_LABELS: Record<string, string> = {
-  CASH: "Cash",
-  QRIS: "QRIS",
-  DEBIT: "Debit",
-  TRANSFER: "Transfer",
-};
+import { PAYMENT_LABELS } from "@/constants/payments";
 
 type TransactionListProps = {
   transactions: TransactionDto[];
   shopName: string;
 };
+
+function WhatsAppStatusBadge({ transaction }: { transaction: TransactionDto }) {
+  if (!transaction.customerPhone) {
+    return <span className="text-xs text-muted-foreground">—</span>;
+  }
+
+  if (transaction.whatsappSentAt) {
+    return (
+      <Badge className="bg-emerald-600 text-white hover:bg-emerald-600">
+        <MessageCircle className="mr-1 size-3" aria-hidden />
+        Sent
+      </Badge>
+    );
+  }
+
+  return <Badge variant="outline">Not sent</Badge>;
+}
 
 function TransactionMobileCard({
   tx,
@@ -61,13 +67,16 @@ function TransactionMobileCard({
               </p>
             ) : null}
           </div>
-          <div className="shrink-0 text-right">
+          <div className="shrink-0 space-y-2 text-right">
             <p className="font-semibold tabular-nums">
               {formatCurrency(tx.total)}
             </p>
-            <Badge variant="secondary" className="mt-1">
+            <Badge variant="secondary">
               {PAYMENT_LABELS[tx.paymentMethod] ?? tx.paymentMethod}
             </Badge>
+            <div className="flex justify-end">
+              <WhatsAppStatusBadge transaction={tx} />
+            </div>
           </div>
         </div>
         <Button
@@ -76,7 +85,7 @@ function TransactionMobileCard({
           onClick={onView}
         >
           <Eye className="size-4" aria-hidden />
-          Lihat struk
+          View details
         </Button>
       </div>
     </MobileDataCard>
@@ -102,6 +111,7 @@ export function TransactionList({
                   <TableHead>Customer</TableHead>
                   <TableHead>Barber</TableHead>
                   <TableHead>Payment</TableHead>
+                  <TableHead>WhatsApp</TableHead>
                   <TableHead className="text-right">Total</TableHead>
                   <TableHead className="w-16" />
                 </TableRow>
@@ -122,6 +132,9 @@ export function TransactionList({
                         {PAYMENT_LABELS[tx.paymentMethod] ?? tx.paymentMethod}
                       </Badge>
                     </TableCell>
+                    <TableCell>
+                      <WhatsAppStatusBadge transaction={tx} />
+                    </TableCell>
                     <TableCell className="text-right font-medium tabular-nums">
                       {formatCurrency(tx.total)}
                     </TableCell>
@@ -131,7 +144,7 @@ export function TransactionList({
                         size="icon"
                         className="size-9 min-h-9 min-w-9"
                         onClick={() => setSelected(tx)}
-                        aria-label={`View receipt ${tx.transactionNumber}`}
+                        aria-label={`View transaction ${tx.transactionNumber}`}
                       >
                         <Eye className="size-4" />
                       </Button>
@@ -152,16 +165,12 @@ export function TransactionList({
         />
       </div>
 
-      <Dialog open={Boolean(selected)} onOpenChange={() => setSelected(null)}>
-        <DialogContent className="max-w-sm">
-          <DialogHeader>
-            <DialogTitle>Transaction Receipt</DialogTitle>
-          </DialogHeader>
-          {selected && (
-            <ReceiptTemplate transaction={selected} shopName={shopName} />
-          )}
-        </DialogContent>
-      </Dialog>
+      <TransactionDetailDialog
+        transaction={selected}
+        shopName={shopName}
+        onClose={() => setSelected(null)}
+        onUpdated={setSelected}
+      />
     </>
   );
 }

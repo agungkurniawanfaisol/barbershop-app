@@ -1,22 +1,20 @@
 "use client";
 
 import { useState, useTransition } from "react";
+import { POS_PAYMENT_OPTIONS } from "@/features/cashier/payment-options";
 import {
   Banknote,
-  CreditCard,
-  QrCode,
-  ArrowRightLeft,
   Loader2,
   ChevronDown,
   Sparkles,
 } from "lucide-react";
-import { toast } from "sonner";
 import { checkoutAction } from "@/actions/cashier.actions";
 import type { PosBarberDto } from "@/stores/pos.store";
 import { usePosStore } from "@/stores/pos.store";
 import { formatCurrency } from "@/lib/format";
 import { isSuccess } from "@/utils/result";
 import { CustomerSearch } from "@/features/cashier/customer-search";
+import { CurrencyInput } from "@/components/forms/currency-input";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -24,18 +22,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { NativeSelect } from "@/components/forms/native-select";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { cn } from "@/lib/utils";
-
-const PAYMENT_METHODS = [
-  { value: "CASH", label: "Cash", icon: Banknote, color: "text-emerald-600" },
-  { value: "QRIS", label: "QRIS", icon: QrCode, color: "text-violet-600" },
-  { value: "DEBIT", label: "Debit", icon: CreditCard, color: "text-blue-600" },
-  {
-    value: "TRANSFER",
-    label: "Transfer",
-    icon: ArrowRightLeft,
-    color: "text-amber-600",
-  },
-] as const;
+import { toast } from "sonner";
 
 type CheckoutPanelProps = {
   barbers: PosBarberDto[];
@@ -50,11 +37,13 @@ export function CheckoutPanel({ barbers }: CheckoutPanelProps) {
   const taxPercent = usePosStore((s) => s.taxPercent);
   const notes = usePosStore((s) => s.notes);
   const paymentMethod = usePosStore((s) => s.paymentMethod);
+  const cashPaid = usePosStore((s) => s.cashPaid);
   const setBarberId = usePosStore((s) => s.setBarberId);
   const setDiscountAmount = usePosStore((s) => s.setDiscountAmount);
   const setDiscountPercent = usePosStore((s) => s.setDiscountPercent);
   const setNotes = usePosStore((s) => s.setNotes);
   const setPaymentMethod = usePosStore((s) => s.setPaymentMethod);
+  const setCashPaid = usePosStore((s) => s.setCashPaid);
   const setLastTransaction = usePosStore((s) => s.setLastTransaction);
   const setReceiptOpen = usePosStore((s) => s.setReceiptOpen);
   const clearCart = usePosStore((s) => s.clearCart);
@@ -68,10 +57,16 @@ export function CheckoutPanel({ barbers }: CheckoutPanelProps) {
 
   const totals = getTotals();
   const hasItems = items.length > 0;
+  const cashInsufficient =
+    paymentMethod === "CASH" && cashPaid < totals.total;
 
   function handleCheckout() {
     if (!hasItems) {
       toast.error("Tambahkan minimal satu layanan");
+      return;
+    }
+    if (paymentMethod === "CASH" && cashPaid < totals.total) {
+      toast.error("Uang diterima kurang dari total");
       return;
     }
 
@@ -85,6 +80,7 @@ export function CheckoutPanel({ barbers }: CheckoutPanelProps) {
         taxPercent,
         notes: notes || null,
         paymentMethod,
+        cashPaid: paymentMethod === "CASH" ? cashPaid : null,
       });
 
       if (isSuccess(result)) {
@@ -126,7 +122,7 @@ export function CheckoutPanel({ barbers }: CheckoutPanelProps) {
           Metode Pembayaran
         </Label>
         <div className="grid grid-cols-2 gap-2">
-          {PAYMENT_METHODS.map(({ value, label, icon: Icon, color }) => {
+          {POS_PAYMENT_OPTIONS.map(({ value, label, icon: Icon }) => {
             const selected = paymentMethod === value;
             return (
               <button
@@ -139,7 +135,7 @@ export function CheckoutPanel({ barbers }: CheckoutPanelProps) {
                 )}
               >
                 <Icon
-                  className={cn("size-5", selected ? "text-primary" : color)}
+                  className={cn("size-5", selected && "text-primary")}
                   aria-hidden
                 />
                 {label}
@@ -148,6 +144,17 @@ export function CheckoutPanel({ barbers }: CheckoutPanelProps) {
           })}
         </div>
       </div>
+
+      {paymentMethod === "CASH" && (
+        <div className="space-y-2">
+          <Label htmlFor="checkout-cash-paid">Uang diterima</Label>
+          <CurrencyInput
+            id="checkout-cash-paid"
+            value={cashPaid}
+            onValueChange={setCashPaid}
+          />
+        </div>
+      )}
 
       <button
         type="button"
@@ -260,7 +267,7 @@ export function CheckoutPanel({ barbers }: CheckoutPanelProps) {
           size="lg"
           className="pos-pay-button h-14 w-full flex-col gap-0.5 text-base font-bold sm:flex-row sm:gap-2"
           onClick={handleCheckout}
-          disabled={isCheckingOut || !hasItems}
+          disabled={isCheckingOut || !hasItems || cashInsufficient}
         >
           {isCheckingOut ? (
             <>

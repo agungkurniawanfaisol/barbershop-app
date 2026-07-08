@@ -4,29 +4,28 @@ import { useEffect, useState, useTransition } from "react";
 import {
   ArrowLeft,
   ArrowRight,
-  ArrowRightLeft,
   Banknote,
   Check,
   ChevronDown,
-  CreditCard,
   Loader2,
   Minus,
   Plus,
-  QrCode,
   Receipt,
   ShoppingBag,
   Sparkles,
   Trash2,
-  UserRound,
 } from "lucide-react";
 import { toast } from "sonner";
 import { checkoutAction } from "@/actions/cashier.actions";
-import type { PosBarberDto } from "@/stores/pos.store";
+import { markWhatsAppSentAction } from "@/actions/transaction.actions";
+import { POS_PAYMENT_OPTIONS } from "@/features/cashier/payment-options";
+import type { PosBarberDto, PosCustomerDto } from "@/stores/pos.store";
 import { usePosStore } from "@/stores/pos.store";
 import { formatCurrency } from "@/lib/format";
 import { openWhatsAppThankYou } from "@/lib/whatsapp";
 import { isSuccess } from "@/utils/result";
 import { CustomerSearch } from "@/features/cashier/customer-search";
+import { CurrencyInput } from "@/components/forms/currency-input";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -35,12 +34,10 @@ import { NativeSelect } from "@/components/forms/native-select";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { cn } from "@/lib/utils";
 
-const PAYMENT_METHODS = [
-  { value: "CASH", label: "Cash", icon: Banknote },
-  { value: "QRIS", label: "QRIS", icon: QrCode },
-  { value: "DEBIT", label: "Debit", icon: CreditCard },
-  { value: "TRANSFER", label: "Transfer", icon: ArrowRightLeft },
-] as const;
+function roundUpTo(amount: number, step: number): number {
+  if (amount <= 0) return step;
+  return Math.ceil(amount / step) * step;
+}
 
 const WIZARD_STEPS = [
   { id: "cart", label: "Pesanan" },
@@ -51,6 +48,8 @@ type OrderPanelProps = {
   barbers: PosBarberDto[];
   shopName: string;
   className?: string;
+  compact?: boolean;
+  recentCustomers?: PosCustomerDto[];
 };
 
 function WizardStepper({
@@ -125,7 +124,13 @@ function OrderTotals({ compact }: { compact?: boolean }) {
   );
 }
 
-export function OrderPanel({ barbers, shopName, className }: OrderPanelProps) {
+export function OrderPanel({
+  barbers,
+  shopName,
+  className,
+  compact = false,
+  recentCustomers = [],
+}: OrderPanelProps) {
   const customer = usePosStore((s) => s.customer);
   const walkIn = usePosStore((s) => s.walkIn);
   const items = usePosStore((s) => s.items);
@@ -134,12 +139,14 @@ export function OrderPanel({ barbers, shopName, className }: OrderPanelProps) {
   const discountPercent = usePosStore((s) => s.discountPercent);
   const notes = usePosStore((s) => s.notes);
   const paymentMethod = usePosStore((s) => s.paymentMethod);
+  const cashPaid = usePosStore((s) => s.cashPaid);
   const setWalkIn = usePosStore((s) => s.setWalkIn);
   const setBarberId = usePosStore((s) => s.setBarberId);
   const setDiscountAmount = usePosStore((s) => s.setDiscountAmount);
   const setDiscountPercent = usePosStore((s) => s.setDiscountPercent);
   const setNotes = usePosStore((s) => s.setNotes);
   const setPaymentMethod = usePosStore((s) => s.setPaymentMethod);
+  const setCashPaid = usePosStore((s) => s.setCashPaid);
   const setLastTransaction = usePosStore((s) => s.setLastTransaction);
   const setReceiptOpen = usePosStore((s) => s.setReceiptOpen);
   const clearCart = usePosStore((s) => s.clearCart);
@@ -159,6 +166,9 @@ export function OrderPanel({ barbers, shopName, className }: OrderPanelProps) {
   const hasItems = items.length > 0;
   const customerReady = Boolean(customer) || walkIn;
   const currentStep = WIZARD_STEPS[step]?.id ?? "cart";
+  const changeAmount = Math.max(0, cashPaid - totals.total);
+  const cashInsufficient =
+    paymentMethod === "CASH" && cashPaid < totals.total;
 
   useEffect(() => {
     if (!hasItems) setStep(0);
@@ -190,6 +200,10 @@ export function OrderPanel({ barbers, shopName, className }: OrderPanelProps) {
       setStep(0);
       return;
     }
+    if (paymentMethod === "CASH" && cashPaid < totals.total) {
+      toast.error("Uang diterima kurang dari total");
+      return;
+    }
 
     startCheckout(async () => {
       const result = await checkoutAction({
@@ -201,6 +215,7 @@ export function OrderPanel({ barbers, shopName, className }: OrderPanelProps) {
         taxPercent: usePosStore.getState().taxPercent,
         notes: notes || null,
         paymentMethod,
+        cashPaid: paymentMethod === "CASH" ? cashPaid : null,
       });
 
       if (isSuccess(result)) {
@@ -224,6 +239,8 @@ export function OrderPanel({ barbers, shopName, className }: OrderPanelProps) {
             toast.info(
               "Izinkan popup browser untuk mengirim pesan WhatsApp terima kasih.",
             );
+          } else {
+            void markWhatsAppSentAction({ id: result.data.id });
           }
         }
         return;
@@ -240,16 +257,16 @@ export function OrderPanel({ barbers, shopName, className }: OrderPanelProps) {
       )}
     >
       <header className="pos-order-header shrink-0">
-        <div className="flex items-center gap-2">
-          <div className="flex size-7 shrink-0 items-center justify-center rounded-lg bg-primary text-primary-foreground shadow-sm">
-            <Receipt className="size-3.5" aria-hidden />
+        <div className="flex items-center gap-2.5">
+          <div className="flex size-9 shrink-0 items-center justify-center rounded-lg bg-primary text-primary-foreground shadow-sm">
+            <Receipt className="size-4" aria-hidden />
           </div>
           <div className="min-w-0 flex-1">
-            <h2 className="text-xs font-semibold tracking-tight">Pesanan</h2>
-            <p className="truncate text-[10px] text-muted-foreground">
+            <h2 className="text-sm font-semibold tracking-tight">Pesanan Kasir</h2>
+            <p className="truncate text-xs text-muted-foreground">
               {hasItems
                 ? `${itemCount} layanan · ${formatCurrency(totals.total)}`
-                : "Belum ada layanan dipilih"}
+                : "Pilih pelanggan & layanan"}
             </p>
           </div>
           {hasItems && (
@@ -270,7 +287,7 @@ export function OrderPanel({ barbers, shopName, className }: OrderPanelProps) {
       </header>
 
       <div className="pos-scroll min-h-0 flex-1">
-        <div className="space-y-3 p-3 pb-4">
+        <div className="space-y-3 p-3 pb-4 sm:p-4">
           {!hasItems ? (
             <div className="pos-order-empty">
               <div className="flex size-12 items-center justify-center rounded-xl bg-primary/10 text-primary">
@@ -278,97 +295,85 @@ export function OrderPanel({ barbers, shopName, className }: OrderPanelProps) {
               </div>
               <p className="mt-3 text-sm font-semibold">Mulai pesanan</p>
               <p className="mt-1 max-w-[14rem] text-xs text-muted-foreground">
-                Ketuk layanan di katalog untuk menambahkan ke pesanan
+                Pilih pelanggan di bawah, lalu ketuk layanan di katalog
               </p>
             </div>
-          ) : currentStep === "cart" ? (
+          ) : null}
+
+          {currentStep === "cart" ? (
             <>
-              <ul className="space-y-2">
-                {items.map((item) => (
-                  <li key={item.serviceId} className="pos-order-item">
-                    <div className="flex items-start justify-between gap-2">
-                      <div className="min-w-0 flex-1">
-                        <p className="truncate font-medium">{item.serviceName}</p>
-                        <p className="text-xs text-muted-foreground tabular-nums">
-                          {formatCurrency(item.price)} / item
-                        </p>
-                      </div>
-                      <Button
-                        variant="ghost"
-                        size="icon"
-                        className="size-7 shrink-0 text-muted-foreground hover:text-destructive"
-                        onClick={() => removeItem(item.serviceId)}
-                        aria-label={`Hapus ${item.serviceName}`}
-                      >
-                        <Trash2 className="size-3.5" />
-                      </Button>
-                    </div>
-                    <div className="mt-2 flex items-center justify-between gap-2">
-                      <div className="flex items-center rounded-md border bg-background/80 p-0.5">
-                        <Button
-                          variant="ghost"
-                          size="icon"
-                          className="size-7"
-                          onClick={() =>
-                            updateQuantity(item.serviceId, item.quantity - 1)
-                          }
-                          disabled={item.quantity <= 1}
-                          aria-label="Kurangi"
-                        >
-                          <Minus className="size-3" />
-                        </Button>
-                        <span className="w-7 text-center text-xs font-bold tabular-nums">
-                          {item.quantity}
-                        </span>
-                        <Button
-                          variant="ghost"
-                          size="icon"
-                          className="size-7"
-                          onClick={() =>
-                            updateQuantity(item.serviceId, item.quantity + 1)
-                          }
-                          aria-label="Tambah"
-                        >
-                          <Plus className="size-3" />
-                        </Button>
-                      </div>
-                      <p className="shrink-0 text-xs font-semibold tabular-nums text-primary">
-                        {formatCurrency(item.price * item.quantity)}
-                      </p>
-                    </div>
-                  </li>
-                ))}
-              </ul>
+              <div className="pos-customer-block">
+                <CustomerSearch compact={compact} recentCustomers={recentCustomers} />
+              </div>
 
-              <div className="pos-order-divider" />
-
-              <CustomerSearch compact />
-
-              {!customer && !walkIn && (
-                <button
-                  type="button"
-                  onClick={() => setWalkIn(true)}
-                  className="flex w-full items-center justify-center gap-1.5 rounded-lg border border-dashed px-3 py-2 text-xs text-muted-foreground transition-colors hover:border-accent/40 hover:bg-accent/5 hover:text-foreground"
-                >
-                  <UserRound className="size-3.5" aria-hidden />
-                  Walk-in — tanpa data pelanggan
-                </button>
-              )}
-
-              {walkIn && !customer && (
-                <div className="flex items-center justify-between gap-2 rounded-lg border border-accent/30 bg-accent/5 px-3 py-2 text-xs">
-                  <span className="text-muted-foreground">
-                    Mode walk-in aktif
-                  </span>
-                  <button
-                    type="button"
-                    className="font-medium text-primary"
-                    onClick={() => setWalkIn(false)}
-                  >
-                    Ubah
-                  </button>
-                </div>
-              )}
+              {hasItems ? (
+                <>
+                  <div className="flex items-center justify-between gap-2 px-0.5">
+                    <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+                      Layanan dipilih
+                    </p>
+                    <span className="text-xs tabular-nums text-muted-foreground">
+                      {itemCount} item
+                    </span>
+                  </div>
+                  <ul className="space-y-2">
+                    {items.map((item) => (
+                      <li key={item.serviceId} className="pos-order-item">
+                        <div className="flex items-start justify-between gap-2">
+                          <div className="min-w-0 flex-1">
+                            <p className="truncate font-medium">{item.serviceName}</p>
+                            <p className="text-xs text-muted-foreground tabular-nums">
+                              {formatCurrency(item.price)} / item
+                            </p>
+                          </div>
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            className="size-7 shrink-0 text-muted-foreground hover:text-destructive"
+                            onClick={() => removeItem(item.serviceId)}
+                            aria-label={`Hapus ${item.serviceName}`}
+                          >
+                            <Trash2 className="size-3.5" />
+                          </Button>
+                        </div>
+                        <div className="mt-2 flex items-center justify-between gap-2">
+                          <div className="flex items-center rounded-md border bg-background/80 p-0.5">
+                            <Button
+                              variant="ghost"
+                              size="icon"
+                              className="size-7"
+                              onClick={() =>
+                                updateQuantity(item.serviceId, item.quantity - 1)
+                              }
+                              disabled={item.quantity <= 1}
+                              aria-label="Kurangi"
+                            >
+                              <Minus className="size-3" />
+                            </Button>
+                            <span className="w-7 text-center text-xs font-bold tabular-nums">
+                              {item.quantity}
+                            </span>
+                            <Button
+                              variant="ghost"
+                              size="icon"
+                              className="size-7"
+                              onClick={() =>
+                                updateQuantity(item.serviceId, item.quantity + 1)
+                              }
+                              aria-label="Tambah"
+                            >
+                              <Plus className="size-3" />
+                            </Button>
+                          </div>
+                          <p className="shrink-0 text-xs font-semibold tabular-nums text-primary">
+                            {formatCurrency(item.price * item.quantity)}
+                          </p>
+                        </div>
+                      </li>
+                    ))}
+                  </ul>
+                </>
+              ) : null}
             </>
           ) : (
             <div className="space-y-4">
@@ -401,7 +406,7 @@ export function OrderPanel({ barbers, shopName, className }: OrderPanelProps) {
                   id="barber"
                   value={barberId ?? ""}
                   onChange={(e) => setBarberId(e.target.value || null)}
-                  className="h-9 w-full rounded-lg"
+                  className="h-10 w-full rounded-lg bg-background text-foreground"
                 >
                   <option value="">Pilih barber</option>
                   {barbers.map((b) => (
@@ -416,8 +421,8 @@ export function OrderPanel({ barbers, shopName, className }: OrderPanelProps) {
                 <Label className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">
                   Pembayaran
                 </Label>
-                <div className="grid grid-cols-2 gap-2 sm:grid-cols-4">
-                  {PAYMENT_METHODS.map(({ value, label, icon: Icon }) => {
+                <div className="grid grid-cols-2 gap-2">
+                  {POS_PAYMENT_OPTIONS.map(({ value, label, icon: Icon }) => {
                     const selected = paymentMethod === value;
                     return (
                       <button
@@ -436,6 +441,78 @@ export function OrderPanel({ barbers, shopName, className }: OrderPanelProps) {
                   })}
                 </div>
               </div>
+
+              {paymentMethod === "CASH" && (
+                <div className="space-y-2 rounded-xl border border-primary/20 bg-primary/5 p-3">
+                  <Label
+                    htmlFor="cash-paid"
+                    className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground"
+                  >
+                    Uang diterima
+                  </Label>
+                  <CurrencyInput
+                    id="cash-paid"
+                    value={cashPaid}
+                    onValueChange={setCashPaid}
+                    placeholder="0"
+                  />
+                  <div className="flex flex-wrap gap-2">
+                    <Button
+                      type="button"
+                      variant="outline"
+                      size="sm"
+                      className="h-8 text-xs"
+                      onClick={() => setCashPaid(totals.total)}
+                    >
+                      Pas
+                    </Button>
+                    <Button
+                      type="button"
+                      variant="outline"
+                      size="sm"
+                      className="h-8 text-xs"
+                      onClick={() =>
+                        setCashPaid(roundUpTo(totals.total, 50_000))
+                      }
+                    >
+                      50rb
+                    </Button>
+                    <Button
+                      type="button"
+                      variant="outline"
+                      size="sm"
+                      className="h-8 text-xs"
+                      onClick={() =>
+                        setCashPaid(roundUpTo(totals.total, 100_000))
+                      }
+                    >
+                      100rb
+                    </Button>
+                  </div>
+                  <div
+                    className={cn(
+                      "flex items-center justify-between rounded-lg border px-3 py-2 text-sm",
+                      cashInsufficient
+                        ? "border-destructive/40 bg-destructive/5"
+                        : "border-accent/40 bg-accent/10",
+                    )}
+                  >
+                    <span className="font-medium">Kembalian</span>
+                    <span
+                      className={cn(
+                        "font-bold tabular-nums",
+                        cashInsufficient
+                          ? "text-destructive"
+                          : "text-accent",
+                      )}
+                    >
+                      {cashInsufficient
+                        ? `Kurang ${formatCurrency(totals.total - cashPaid)}`
+                        : formatCurrency(changeAmount)}
+                    </span>
+                  </div>
+                </div>
+              )}
 
               <button
                 type="button"
@@ -563,7 +640,11 @@ export function OrderPanel({ barbers, shopName, className }: OrderPanelProps) {
                     size="sm"
                     className="pos-pay-button h-9 flex-1 gap-1.5 text-sm font-semibold"
                     onClick={handleCheckout}
-                    disabled={isCheckingOut || !customerReady}
+                    disabled={
+                      isCheckingOut ||
+                      !customerReady ||
+                      cashInsufficient
+                    }
                   >
                     {isCheckingOut ? (
                       <>

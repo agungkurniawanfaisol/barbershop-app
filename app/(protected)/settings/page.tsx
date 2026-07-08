@@ -2,6 +2,8 @@ import { UserRole } from "@/constants/roles";
 import { requireRole } from "@/lib/auth/session";
 import { settingService } from "@/services/setting.service";
 import { SettingsForm } from "@/features/settings/settings-form";
+import { PageShell } from "@/components/layout/page-shell";
+import { PageHeader } from "@/components/layout/page-header";
 
 export const metadata = { title: "Settings" };
 
@@ -10,15 +12,9 @@ export default async function SettingsPage() {
   const settings = await settingService.getShopSettings();
 
   return (
-    <div className="mx-auto max-w-3xl space-y-4">
-      <div>
-        <h2 className="text-2xl font-bold tracking-tight">Settings</h2>
-        <p className="text-muted-foreground">
-          Configure shop profile, tax rate, and receipt options.
-        </p>
-      </div>
-
+    <PageShell className="max-w-3xl">
+      <PageHeader description="Atur profil toko, tarif pajak, dan opsi struk." />
       <SettingsForm settings={settings} />
-    </div>
+    </PageShell>
   );
 }

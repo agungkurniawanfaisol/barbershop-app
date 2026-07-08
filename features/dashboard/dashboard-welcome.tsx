@@ -15,6 +15,10 @@ export function DashboardWelcome({ user }: DashboardWelcomeProps) {
 
   return (
     <div className="app-card relative overflow-hidden p-4 sm:p-6">
+      <div
+        className="pointer-events-none absolute -right-8 -top-8 size-32 rounded-full bg-primary/5"
+        aria-hidden
+      />
       <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <div className="min-w-0 space-y-1">
           <p className="text-sm text-muted-foreground">

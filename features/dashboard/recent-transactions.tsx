@@ -19,12 +19,7 @@ import {
 } from "@/components/ui/table";
 import { cn } from "@/lib/utils";
 
-const PAYMENT_LABELS: Record<string, string> = {
-  CASH: "Cash",
-  QRIS: "QRIS",
-  DEBIT: "Debit",
-  TRANSFER: "Transfer",
-};
+import { PAYMENT_LABELS } from "@/constants/payments";
 
 type RecentTransactionsProps = {
   transactions: TransactionDto[];

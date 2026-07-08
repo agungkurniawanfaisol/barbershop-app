@@ -14,7 +14,7 @@ export function ResponsiveTable({
 }: ResponsiveTableProps) {
   return (
     <div className={className}>
-      <div className="hidden md:block">{table}</div>
+      <div className="app-table-dense hidden md:block">{table}</div>
       <div className="space-y-3 md:hidden">{mobile}</div>
     </div>
   );

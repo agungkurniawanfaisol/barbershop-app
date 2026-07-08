@@ -4,6 +4,9 @@ import { requireRole } from "@/lib/auth/session";
 import { customerService } from "@/services/customer.service";
 import { paginationSchema } from "@/schemas/common.schema";
 import { CustomerManager } from "@/features/customers/customer-manager";
+import { PageShell } from "@/components/layout/page-shell";
+import { PageHeader } from "@/components/layout/page-header";
+import { PageToolbar } from "@/components/layout/page-toolbar";
 import { SearchInput } from "@/components/data/search-input";
 import { PaginationControls } from "@/components/data/pagination-controls";
 import { EmptyState } from "@/components/data/empty-state";
@@ -27,16 +30,13 @@ export default async function CustomersPage({
   ]);
 
   return (
-    <div className="mx-auto max-w-7xl space-y-4">
-      <div>
-        <h2 className="text-2xl font-bold tracking-tight">Customers</h2>
-        <p className="text-muted-foreground">
-          Manage customer profiles, loyalty, and preferences.
-        </p>
-      </div>
+    <PageShell>
+      <PageHeader description="Kelola profil pelanggan, loyalitas, dan preferensi." />
 
-      <Suspense fallback={<Skeleton className="h-8 max-w-sm" />}>
-        <SearchInput placeholder="Search by name or phone…" />
+      <Suspense fallback={<Skeleton className="h-10 w-full max-w-md" />}>
+        <PageToolbar>
+          <SearchInput placeholder="Cari nama atau nomor telepon…" />
+        </PageToolbar>
       </Suspense>
 
       {result.data.length === 0 ? (
@@ -57,6 +57,6 @@ export default async function CustomersPage({
       <Suspense fallback={null}>
         <PaginationControls page={result.page} totalPages={result.totalPages} />
       </Suspense>
-    </div>
+    </PageShell>
   );
 }

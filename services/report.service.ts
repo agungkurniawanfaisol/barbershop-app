@@ -74,12 +74,7 @@ export type ReportDataDto =
   | TransactionsReportDto
   | ExpensesReportDto;
 
-const PAYMENT_LABELS: Record<string, string> = {
-  CASH: "Cash",
-  QRIS: "QRIS",
-  DEBIT: "Debit",
-  TRANSFER: "Transfer",
-};
+import { PAYMENT_LABELS } from "@/constants/payments";
 
 function serializeRange(range: ReportDateRange) {
   return {

@@ -15,22 +15,24 @@ export function PageHeader({
   if (!description && !children) return null;
 
   return (
-    <div
+    <header
       className={cn(
-        "flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between",
+        "app-page-header flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between",
         className,
       )}
     >
-      {description && (
-        <p className="max-w-2xl text-sm text-muted-foreground sm:text-base">
+      {description ? (
+        <p className="max-w-2xl text-sm leading-relaxed text-muted-foreground sm:text-base">
           {description}
         </p>
+      ) : (
+        <span className="hidden sm:block" aria-hidden />
       )}
-      {children && (
+      {children ? (
         <div className="flex shrink-0 flex-wrap items-center gap-2">
           {children}
         </div>
-      )}
-    </div>
+      ) : null}
+    </header>
   );
 }

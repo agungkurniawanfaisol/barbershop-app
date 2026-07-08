@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { ChevronUp, ShoppingBag } from "lucide-react";
-import type { PosBarberDto, PosServiceDto } from "@/stores/pos.store";
+import type { PosBarberDto, PosCustomerDto, PosServiceDto } from "@/stores/pos.store";
 import { usePosStore } from "@/stores/pos.store";
 import { ServiceGrid } from "@/features/cashier/service-grid";
 import { OrderPanel } from "@/features/cashier/order-panel";
@@ -14,6 +14,7 @@ import { formatCurrency } from "@/lib/format";
 type PosPageProps = {
   services: PosServiceDto[];
   barbers: PosBarberDto[];
+  recentCustomers: PosCustomerDto[];
   taxRate: number;
   shopName: string;
   serviceCount: number;
@@ -22,6 +23,7 @@ type PosPageProps = {
 export function PosPage({
   services,
   barbers,
+  recentCustomers,
   taxRate,
   shopName,
   serviceCount,
@@ -61,7 +63,12 @@ export function PosPage({
           <ServiceGrid services={services} />
         </main>
 
-        <OrderPanel barbers={barbers} shopName={shopName} className="hidden lg:flex" />
+        <OrderPanel
+          barbers={barbers}
+          shopName={shopName}
+          recentCustomers={recentCustomers}
+          className="hidden lg:flex"
+        />
       </div>
 
       {itemCount > 0 && !orderOpen && (
@@ -95,6 +102,8 @@ export function PosPage({
         <OrderPanel
           barbers={barbers}
           shopName={shopName}
+          recentCustomers={recentCustomers}
+          compact
           className="pos-order-panel-sheet h-full max-w-none border-0 shadow-none"
         />
       </PosMobileDrawer>
