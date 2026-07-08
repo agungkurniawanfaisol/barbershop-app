@@ -1,18 +1,28 @@
 import Image from "next/image";
 import { ChevronDown, MapPin } from "lucide-react";
-import { siteConfig } from "@/config/site";
-import { STOREFRONT_IMAGE } from "@/features/landing/constants";
+import { storefrontImageAlt } from "@/features/landing/constants";
+import type { LandingMeta } from "@/types/landing";
+import type { PublicBranding } from "@/types/branding";
 import { cn } from "@/lib/utils";
 
-export function StorefrontHero() {
+type StorefrontHeroProps = {
+  branding: PublicBranding;
+  meta: LandingMeta;
+};
+
+export function StorefrontHero({ branding, meta }: StorefrontHeroProps) {
+  const locationBadge = branding.shopAddress
+    ? `${branding.shopName} · ${branding.locationLabel}`
+    : branding.shopName;
+
   return (
     <section
       className="relative h-dvh min-h-[32rem] w-full overflow-hidden"
       aria-label="Tampilan depan toko"
     >
       <Image
-        src={STOREFRONT_IMAGE.src}
-        alt={STOREFRONT_IMAGE.alt}
+        src={meta.storefrontImage}
+        alt={storefrontImageAlt(branding.shopName)}
         fill
         priority
         sizes="100vw"
@@ -28,20 +38,18 @@ export function StorefrontHero() {
         <div className="mx-auto max-w-3xl space-y-4 sm:space-y-5">
           <p className="inline-flex items-center gap-2 rounded-full border border-white/20 bg-white/10 px-4 py-2 text-sm font-medium text-white/90 backdrop-blur-md">
             <MapPin className="size-4 shrink-0" aria-hidden />
-            BarberPro Hexa · Jakarta Pusat
+            {locationBadge}
           </p>
 
           <h1 className="font-display text-3xl leading-[1.05] font-semibold tracking-tight text-white text-balance sm:text-5xl md:text-6xl">
             Selamat datang di{" "}
             <span className="landing-text-gradient-on-dark">
-              {siteConfig.name.replace(" POS", "")}
+              {branding.shopName}
             </span>
           </h1>
 
           <p className="mx-auto max-w-xl text-base leading-relaxed text-white/80 sm:text-lg">
-            Fasad toko kami — tempat potongan rapi bertemu layanan premium.
-            Scroll untuk menjelajahi gaya, fitur, dan pengalaman barbershop
-            modern.
+            {meta.storefrontWelcome}
           </p>
         </div>
 

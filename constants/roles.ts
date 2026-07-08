@@ -35,6 +35,7 @@ export const ROLE_ROUTES: Record<UserRole, string[]> = {
     "/expenses",
     "/reports",
     "/settings",
+    "/landing",
     "/audit",
   ],
   [UserRole.CASHIER]: [

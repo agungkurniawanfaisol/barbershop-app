@@ -13,7 +13,16 @@ import {
   type PaymentMethod,
   type UserRole,
 } from "../app/generated/prisma/client";
-import { SETTING_CATEGORY, SETTING_KEYS } from "../constants/settings";
+import { SETTING_CATEGORY, SETTING_KEYS, LANDING_SETTING_CATEGORY } from "../constants/settings";
+import {
+  DEFAULT_LANDING_BENEFITS,
+  DEFAULT_LANDING_FEATURES,
+  DEFAULT_LANDING_META,
+  DEFAULT_LANDING_STATS,
+  DEFAULT_LANDING_STYLES,
+  DEFAULT_LANDING_TESTIMONIALS,
+  LandingSection,
+} from "../constants/landing";
 import { calculateBarberCommission } from "../utils/barber-commission";
 
 const SEED_VERSION = "2026-07-06-earnings";
@@ -220,7 +229,7 @@ async function main() {
 
     console.log("Seeding shop settings...");
     const settings = [
-      { key: SETTING_KEYS.shopName, value: "BarberPro Hexa" },
+      { key: SETTING_KEYS.shopName, value: "Hexa Barber" },
       {
         key: SETTING_KEYS.shopAddress,
         value: "Jl. Sudirman No. 45, Jakarta Pusat",
@@ -245,6 +254,68 @@ async function main() {
         },
         update: { value: setting.value },
       });
+    }
+
+    console.log("Seeding landing page content...");
+    await prisma.setting.upsert({
+      where: { key: SETTING_KEYS.landingMeta },
+      create: {
+        key: SETTING_KEYS.landingMeta,
+        value: DEFAULT_LANDING_META,
+        category: LANDING_SETTING_CATEGORY,
+      },
+      update: { value: DEFAULT_LANDING_META },
+    });
+
+    const landingCount = await prisma.landingItem.count({
+      where: { deletedAt: null },
+    });
+
+    if (landingCount === 0) {
+      const landingItems = [
+        ...DEFAULT_LANDING_STYLES.map((item) => ({
+          section: LandingSection.STYLE,
+          title: item.title,
+          subtitle: item.subtitle,
+          description: item.description,
+          imageUrl: item.imageUrl,
+          sortOrder: item.sortOrder,
+        })),
+        ...DEFAULT_LANDING_STATS.map((item) => ({
+          section: LandingSection.STAT,
+          title: item.title,
+          subtitle: item.subtitle,
+          description: null,
+          imageUrl: null,
+          sortOrder: item.sortOrder,
+        })),
+        ...DEFAULT_LANDING_FEATURES.map((item) => ({
+          section: LandingSection.FEATURE,
+          title: item.title,
+          subtitle: item.subtitle,
+          description: item.description,
+          imageUrl: null,
+          sortOrder: item.sortOrder,
+        })),
+        ...DEFAULT_LANDING_BENEFITS.map((item) => ({
+          section: LandingSection.BENEFIT,
+          title: item.title,
+          subtitle: item.subtitle,
+          description: item.description,
+          imageUrl: null,
+          sortOrder: item.sortOrder,
+        })),
+        ...DEFAULT_LANDING_TESTIMONIALS.map((item) => ({
+          section: LandingSection.TESTIMONIAL,
+          title: "Testimoni",
+          subtitle: item.subtitle,
+          description: item.description,
+          imageUrl: null,
+          sortOrder: item.sortOrder,
+        })),
+      ];
+
+      await prisma.landingItem.createMany({ data: landingItems });
     }
 
     console.log("Seeding service categories & services...");

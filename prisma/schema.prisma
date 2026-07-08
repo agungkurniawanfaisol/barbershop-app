@@ -64,6 +64,14 @@ enum AttendanceStatus {
   HALF_DAY
 }
 
+enum LandingSection {
+  STYLE
+  STAT
+  FEATURE
+  BENEFIT
+  TESTIMONIAL
+}
+
 // ─── Auth & RBAC ─────────────────────────────────────────────────────────────
 
 model User {
@@ -362,6 +370,25 @@ model Setting {
   @@index([category])
   @@index([deletedAt])
   @@map("settings")
+}
+
+model LandingItem {
+  id          String          @id @default(uuid()) @db.Uuid
+  section     LandingSection
+  title       String
+  subtitle    String?
+  description String?
+  imageUrl    String?         @map("image_url")
+  sortOrder   Int             @default(0) @map("sort_order")
+  isPublished Boolean         @default(true) @map("is_published")
+  createdAt   DateTime        @default(now()) @map("created_at")
+  updatedAt   DateTime        @updatedAt @map("updated_at")
+  deletedAt   DateTime?       @map("deleted_at")
+
+  @@index([section, sortOrder])
+  @@index([isPublished])
+  @@index([deletedAt])
+  @@map("landing_items")
 }
 
 model AuditLog {

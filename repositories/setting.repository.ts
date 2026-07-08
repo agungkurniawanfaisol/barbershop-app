@@ -3,6 +3,7 @@ import { notDeleted } from "@/repositories/base.repository";
 import {
   SETTING_CATEGORY,
   SETTING_KEYS,
+  LANDING_SETTING_CATEGORY,
 } from "@/constants/settings";
 import type { ShopSettingsInput } from "@/schemas/settings.schema";
 import type { Prisma } from "@/app/generated/prisma/client";
@@ -44,6 +45,18 @@ export class SettingRepository {
         }),
       ),
     );
+  }
+
+  async upsertLandingMeta(value: Prisma.InputJsonValue) {
+    await prisma.setting.upsert({
+      where: { key: SETTING_KEYS.landingMeta },
+      create: {
+        key: SETTING_KEYS.landingMeta,
+        value,
+        category: LANDING_SETTING_CATEGORY,
+      },
+      update: { value },
+    });
   }
 }
 

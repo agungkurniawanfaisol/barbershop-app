@@ -7,8 +7,11 @@ export type HaircutStyle = {
 
 export const STOREFRONT_IMAGE = {
   src: "/images/shop/storefront.jpg",
-  alt: "Fasad depan BarberPro Hexa — barbershop modern dengan pencahayaan hangat",
 } as const;
+
+export function storefrontImageAlt(shopName: string): string {
+  return `Fasad depan ${shopName} — barbershop modern dengan pencahayaan hangat`;
+}
 
 export const HAIRCUT_STYLES: HaircutStyle[] = [
   {

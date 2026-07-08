@@ -3,6 +3,8 @@ import { format } from "date-fns";
 import { UserRole } from "@/constants/roles";
 import { requireRole } from "@/lib/auth/session";
 import { transactionService } from "@/services/transaction.service";
+import { settingService } from "@/services/setting.service";
+import { getDefaultShopName } from "@/lib/branding";
 import { transactionListFilterSchema } from "@/schemas/transaction.schema";
 import { TransactionList } from "@/features/transactions/transaction-list";
 import { TransactionFilters } from "@/features/transactions/transaction-filters";
@@ -44,13 +46,14 @@ export default async function TransactionsPage({
   ]);
 
   const params = transactionListFilterSchema.parse(await searchParams);
-  const shopName = process.env.NEXT_PUBLIC_SHOP_NAME ?? "BarberPro";
 
-  const [result, chartData, barbers] = await Promise.all([
+  const [result, chartData, barbers, settings] = await Promise.all([
     transactionService.list(params),
     transactionService.getChartData(params),
     transactionService.getFilterBarbers(),
+    settingService.getShopSettings(),
   ]);
+  const shopName = settings.shopName || getDefaultShopName();
 
   return (
     <PageShell>

@@ -1,7 +1,9 @@
+const DEFAULT_SHOP_NAME = "Hexa Barber";
+
 export const siteConfig = {
-  name: "BarberPro POS",
+  name: process.env.NEXT_PUBLIC_SHOP_NAME ?? DEFAULT_SHOP_NAME,
   description:
-    "Enterprise barbershop management and point-of-sale system",
+    "Barbershop premium dengan layanan rapi, POS modern, dan pengalaman pelanggan terbaik",
   url: process.env.NEXT_PUBLIC_APP_URL ?? "http://localhost:5173",
   locale: "id-ID",
   currency: process.env.NEXT_PUBLIC_CURRENCY ?? "IDR",

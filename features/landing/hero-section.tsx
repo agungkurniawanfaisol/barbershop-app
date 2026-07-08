@@ -2,10 +2,9 @@ import Link from "next/link";
 import Image from "next/image";
 import { ArrowRight, CheckCircle2, Sparkles } from "lucide-react";
 import { buttonVariants } from "@/components/ui/button";
-import { siteConfig } from "@/config/site";
 import { ROUTES } from "@/constants/routes";
 import { cn } from "@/lib/utils";
-import { HAIRCUT_STYLES } from "@/features/landing/constants";
+import type { LandingItemDto, LandingMeta } from "@/types/landing";
 
 const HIGHLIGHTS = [
   "Kasir & struk digital",
@@ -13,8 +12,25 @@ const HIGHLIGHTS = [
   "Multi-peran staff",
 ] as const;
 
-export function HeroSection() {
-  const heroImage = HAIRCUT_STYLES[1] ?? HAIRCUT_STYLES[0]!;
+type HeroSectionProps = {
+  shopName: string;
+  meta: LandingMeta;
+  heroStyle?: LandingItemDto;
+};
+
+function splitHeroTitle(title: string) {
+  const parts = title.split(". ").filter(Boolean);
+  if (parts.length <= 1) {
+    return { lead: title, accent: null };
+  }
+  return {
+    lead: `${parts[0]}.`,
+    accent: parts.slice(1).join(". "),
+  };
+}
+
+export function HeroSection({ shopName, meta, heroStyle }: HeroSectionProps) {
+  const { lead, accent } = splitHeroTitle(meta.heroTitle);
 
   return (
     <section className="landing-mesh landing-grain relative overflow-hidden">
@@ -22,21 +38,19 @@ export function HeroSection() {
         <div className="space-y-8">
           <div className="inline-flex items-center gap-2 rounded-full border border-accent/25 bg-accent/8 px-4 py-2 text-sm font-medium text-accent shadow-sm backdrop-blur-sm">
             <Sparkles className="size-4" aria-hidden />
-            Enterprise Barbershop Suite
+            {shopName}
           </div>
 
           <div className="space-y-5">
             <h1 className="font-display text-4xl leading-[1.08] font-semibold tracking-tight text-balance sm:text-5xl lg:text-[3.5rem]">
-              Potongan rapi.{" "}
-              <span className="landing-text-gradient">
-                Operasional kelas premium.
-              </span>
+              {lead}{" "}
+              {accent ? (
+                <span className="landing-text-gradient">{accent}</span>
+              ) : null}
             </h1>
             <div className="landing-gold-line h-px w-24" aria-hidden />
             <p className="max-w-xl text-lg leading-relaxed text-muted-foreground">
-              {siteConfig.description}. Satu platform elegan untuk layanan,
-              barber, transaksi, dan laporan — dirancang untuk barbershop modern
-              di Indonesia.
+              {meta.heroSubtitle}
             </p>
           </div>
 
@@ -78,48 +92,52 @@ export function HeroSection() {
           </div>
         </div>
 
-        <div className="relative lg:pl-6">
-          <div
-            className="absolute -inset-6 rounded-[2rem] bg-gradient-to-br from-primary/25 via-transparent to-accent/20 blur-3xl"
-            aria-hidden
-          />
-          <div className="landing-glass relative overflow-hidden rounded-2xl shadow-2xl shadow-primary/15 ring-1 ring-black/5">
-            <div className="relative aspect-[4/5]">
-              <Image
-                src={heroImage.image}
-                alt={`Contoh gaya ${heroImage.title}`}
-                width={800}
-                height={1000}
-                priority
-                sizes="(max-width: 1024px) 100vw, 50vw"
-                className="size-full object-cover"
-              />
-              <div className="absolute inset-0 bg-gradient-to-t from-black/85 via-black/25 to-transparent" />
-              <div className="absolute inset-x-0 bottom-0 p-7">
-                <p className="text-xs font-medium tracking-[0.2em] text-white/60 uppercase">
-                  Signature style
-                </p>
-                <p className="font-display mt-1 text-3xl font-medium text-white">
-                  {heroImage.title}
-                </p>
-                <p className="mt-2 line-clamp-2 text-sm leading-relaxed text-white/75">
-                  {heroImage.description}
-                </p>
+        {heroStyle?.imageUrl ? (
+          <div className="relative lg:pl-6">
+            <div
+              className="absolute -inset-6 rounded-[2rem] bg-gradient-to-br from-primary/25 via-transparent to-accent/20 blur-3xl"
+              aria-hidden
+            />
+            <div className="landing-glass relative overflow-hidden rounded-2xl shadow-2xl shadow-primary/15 ring-1 ring-black/5">
+              <div className="relative aspect-[4/5]">
+                <Image
+                  src={heroStyle.imageUrl}
+                  alt={`Contoh gaya ${heroStyle.title}`}
+                  width={800}
+                  height={1000}
+                  priority
+                  sizes="(max-width: 1024px) 100vw, 50vw"
+                  className="size-full object-cover"
+                />
+                <div className="absolute inset-0 bg-gradient-to-t from-black/85 via-black/25 to-transparent" />
+                <div className="absolute inset-x-0 bottom-0 p-7">
+                  <p className="text-xs font-medium tracking-[0.2em] text-white/60 uppercase">
+                    Signature style
+                  </p>
+                  <p className="font-display mt-1 text-3xl font-medium text-white">
+                    {heroStyle.title}
+                  </p>
+                  {heroStyle.description ? (
+                    <p className="mt-2 line-clamp-2 text-sm leading-relaxed text-white/75">
+                      {heroStyle.description}
+                    </p>
+                  ) : null}
+                </div>
               </div>
-            </div>
-            <div className="flex items-center justify-between border-t border-border/50 bg-card/80 px-6 py-4 backdrop-blur-md">
-              <div>
-                <p className="text-xs tracking-wide text-muted-foreground uppercase">
-                  Modul aktif
-                </p>
-                <p className="font-medium tabular-nums">POS · Laporan · RBAC</p>
-              </div>
-              <div className="rounded-full border border-accent/30 bg-accent/10 px-4 py-1.5 text-xs font-semibold tracking-wide text-accent uppercase">
-                Premium
+              <div className="flex items-center justify-between border-t border-border/50 bg-card/80 px-6 py-4 backdrop-blur-md">
+                <div>
+                  <p className="text-xs tracking-wide text-muted-foreground uppercase">
+                    Modul aktif
+                  </p>
+                  <p className="font-medium tabular-nums">POS · Laporan · RBAC</p>
+                </div>
+                <div className="rounded-full border border-accent/30 bg-accent/10 px-4 py-1.5 text-xs font-semibold tracking-wide text-accent uppercase">
+                  Premium
+                </div>
               </div>
             </div>
           </div>
-        </div>
+        ) : null}
       </div>
     </section>
   );

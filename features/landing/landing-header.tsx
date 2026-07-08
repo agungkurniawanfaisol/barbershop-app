@@ -4,7 +4,6 @@ import { useEffect, useState } from "react";
 import Link from "next/link";
 import { Menu, Scissors } from "lucide-react";
 import { buttonVariants } from "@/components/ui/button";
-import { siteConfig } from "@/config/site";
 import { ROUTES } from "@/constants/routes";
 import { cn } from "@/lib/utils";
 import {
@@ -20,7 +19,11 @@ const NAV_LINKS = [
   { href: "#testimoni", label: "Testimoni" },
 ] as const;
 
-export function LandingHeader() {
+type LandingHeaderProps = {
+  shopName: string;
+};
+
+export function LandingHeader({ shopName }: LandingHeaderProps) {
   const [mobileNavOpen, setMobileNavOpen] = useState(false);
   const [overStorefront, setOverStorefront] = useState(true);
 
@@ -71,7 +74,7 @@ export function LandingHeader() {
             <Scissors className="size-4" aria-hidden />
           </span>
           <span className="font-display hidden text-lg sm:inline">
-            {siteConfig.name}
+            {shopName}
           </span>
         </Link>
 

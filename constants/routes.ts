@@ -1,4 +1,6 @@
-export const APP_NAME = "BarberPro POS";
+import { siteConfig } from "@/config/site";
+
+export const APP_NAME = siteConfig.name;
 export const APP_DESCRIPTION =
   "Enterprise barbershop management and point-of-sale system";
 
@@ -15,6 +17,7 @@ export const ROUTES = {
   expenses: "/expenses",
   reports: "/reports",
   settings: "/settings",
+  landing: "/landing",
   users: "/users",
   audit: "/audit",
   myEarnings: "/my-earnings",

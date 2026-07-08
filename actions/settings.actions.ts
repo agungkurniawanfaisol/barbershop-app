@@ -37,6 +37,8 @@ export async function updateShopSettingsAction(
     });
 
     revalidatePath(ROUTES.settings);
+    revalidatePath(ROUTES.home);
+    revalidatePath(ROUTES.login);
     revalidatePath(ROUTES.dashboard);
     revalidatePath(ROUTES.cashier);
     revalidatePath(ROUTES.reports);

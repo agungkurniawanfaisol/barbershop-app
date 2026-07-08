@@ -60,12 +60,15 @@ export function SettingsForm({ settings }: SettingsFormProps) {
         <CardHeader>
           <CardTitle>Shop Profile</CardTitle>
           <CardDescription>
-            Business details shown on receipts and reports.
+            Business details shown on the landing page, receipts, and reports.
           </CardDescription>
         </CardHeader>
         <CardContent className="grid gap-4 sm:grid-cols-2">
           <div className="space-y-2 sm:col-span-2">
             <Label htmlFor="shopName">Shop Name</Label>
+            <p className="text-xs text-muted-foreground">
+              Ditampilkan di halaman beranda, struk, dan laporan.
+            </p>
             <Input
               id="shopName"
               name="shopName"

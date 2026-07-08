@@ -1,19 +1,12 @@
 import { Quote } from "lucide-react";
+import type { LandingItemDto, LandingMeta } from "@/types/landing";
 
-const TESTIMONIALS = [
-  {
-    quote:
-      "Dashboard dan kasir terasa seperti sistem hotel bintang lima — cepat, rapi, dan mudah dilatih ke tim baru.",
-    role: "Owner, Fade House Jakarta",
-  },
-  {
-    quote:
-      "Laporan 30 hari membantu kami lihat layanan mana yang paling laris tanpa spreadsheet manual.",
-    role: "Manager Operasional",
-  },
-] as const;
+type TrustSectionProps = {
+  testimonials: LandingItemDto[];
+  meta: LandingMeta;
+};
 
-export function TrustSection() {
+export function TrustSection({ testimonials, meta }: TrustSectionProps) {
   return (
     <section
       id="testimoni"
@@ -22,29 +15,28 @@ export function TrustSection() {
       <div className="mx-auto max-w-6xl px-4 sm:px-6">
         <div className="mb-12 text-center">
           <p className="text-sm font-medium tracking-[0.18em] text-primary uppercase">
-            Dipercaya tim profesional
+            {meta.testimonialsEyebrow}
           </p>
           <h2 className="font-display mt-3 text-3xl font-semibold tracking-tight sm:text-4xl">
-            Standar operasional yang terasa premium
+            {meta.testimonialsTitle}
           </h2>
         </div>
 
         <ul className="grid gap-6 md:grid-cols-2">
-          {TESTIMONIALS.map((item) => (
+          {testimonials.map((item) => (
             <li
-              key={item.role}
+              key={item.id}
               className="landing-glass landing-card-hover relative rounded-2xl p-8"
             >
-              <Quote
-                className="size-8 text-accent/40"
-                aria-hidden
-              />
+              <Quote className="size-8 text-accent/40" aria-hidden />
               <blockquote className="mt-4 text-lg leading-relaxed text-foreground/90">
-                &ldquo;{item.quote}&rdquo;
+                &ldquo;{item.description}&rdquo;
               </blockquote>
-              <footer className="mt-6 text-sm font-medium text-muted-foreground">
-                — {item.role}
-              </footer>
+              {item.subtitle ? (
+                <footer className="mt-6 text-sm font-medium text-muted-foreground">
+                  — {item.subtitle}
+                </footer>
+              ) : null}
             </li>
           ))}
         </ul>

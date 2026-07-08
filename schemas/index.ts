@@ -7,4 +7,5 @@ export * from "./transaction.schema";
 export * from "./expense.schema";
 export * from "./report.schema";
 export * from "./settings.schema";
+export * from "./landing.schema";
 export * from "./user.schema";

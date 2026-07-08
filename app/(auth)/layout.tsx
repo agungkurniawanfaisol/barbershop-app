@@ -1,22 +1,26 @@
 import Link from "next/link";
 import { Scissors, Shield, Zap } from "lucide-react";
-import { LandingHeader } from "@/features/landing/landing-header";
-import { siteConfig } from "@/config/site";
+import { AuthHeader } from "@/features/auth/auth-header";
 import { ROUTES } from "@/constants/routes";
+import { getPublicBranding } from "@/lib/branding";
+
+export const dynamic = "force-dynamic";
 
 const TRUST_POINTS = [
   { icon: Shield, text: "Role-based access control" },
   { icon: Zap, text: "Kasir & laporan real-time" },
 ] as const;
 
-export default function AuthLayout({
+export default async function AuthLayout({
   children,
 }: {
   children: React.ReactNode;
 }) {
+  const branding = await getPublicBranding();
+
   return (
     <div className="flex h-dvh flex-col overflow-hidden bg-background">
-      <LandingHeader />
+      <AuthHeader shopName={branding.shopName} />
       <div className="grid min-h-0 flex-1 overflow-hidden lg:grid-cols-2">
         <div className="landing-mesh relative hidden overflow-hidden border-r lg:flex lg:flex-col lg:justify-center lg:px-10 lg:py-8 xl:px-14">
           <div
@@ -54,12 +58,12 @@ export default function AuthLayout({
               <span className="flex size-8 items-center justify-center rounded-lg bg-primary/10 text-primary">
                 <Scissors className="size-4" aria-hidden />
               </span>
-              Kembali ke {siteConfig.name}
+              Kembali ke {branding.shopName}
             </Link>
           </div>
         </div>
 
-        <div className="flex min-h-0 items-center justify-center overflow-y-auto px-4 py-6 pt-20 sm:px-8 sm:py-8">
+        <div className="flex min-h-0 items-center justify-center overflow-y-auto px-4 py-6 sm:px-8 sm:py-8">
           <div className="w-full max-w-md">{children}</div>
         </div>
       </div>

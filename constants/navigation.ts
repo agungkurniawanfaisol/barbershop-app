@@ -12,9 +12,11 @@ import {
   Settings,
   Shield,
   ClipboardList,
+  Globe,
 } from "lucide-react";
 import { UserRole } from "@/constants/roles";
 import { ROUTES } from "@/constants/routes";
+import { siteConfig } from "@/config/site";
 
 export type NavItem = {
   title: string;
@@ -95,6 +97,12 @@ export const NAV_ITEMS: NavItem[] = [
     roles: [UserRole.ADMIN, UserRole.MANAGER],
   },
   {
+    title: "Landing Page",
+    href: ROUTES.landing,
+    icon: Globe,
+    roles: [UserRole.ADMIN, UserRole.MANAGER],
+  },
+  {
     title: "Settings",
     href: ROUTES.settings,
     icon: Settings,
@@ -134,7 +142,7 @@ export const NAV_GROUPS: NavGroup[] = [
   },
   {
     label: "Administrasi",
-    hrefs: [ROUTES.users, ROUTES.audit, ROUTES.settings],
+    hrefs: [ROUTES.users, ROUTES.audit, ROUTES.landing, ROUTES.settings],
   },
 ];
 
@@ -154,7 +162,47 @@ export function getNavGroupLabel(href: string): string | null {
 export function getNavContext(pathname: string) {
   const item = getActiveNavItem(pathname);
   return {
-    title: item?.title ?? "BarberPro POS",
+    title: item?.title ?? siteConfig.name,
     group: item ? getNavGroupLabel(item.href) : null,
+    item,
   };
+}
+
+export type NavBreadcrumb = {
+  label: string;
+  href?: string;
+  icon?: LucideIcon;
+  current?: boolean;
+};
+
+export function getNavBreadcrumbs(pathname: string): NavBreadcrumb[] {
+  const item = getActiveNavItem(pathname);
+  const isDashboard = !item || item.href === ROUTES.dashboard;
+
+  if (isDashboard) {
+    return [
+      {
+        label: "Dashboard",
+        href: ROUTES.dashboard,
+        icon: LayoutDashboard,
+        current: true,
+      },
+    ];
+  }
+
+  const group = getNavGroupLabel(item.href);
+
+  return [
+    {
+      label: "Dashboard",
+      href: ROUTES.dashboard,
+      icon: LayoutDashboard,
+    },
+    ...(group ? [{ label: group }] : []),
+    {
+      label: item.title,
+      icon: item.icon,
+      current: true,
+    },
+  ];
 }

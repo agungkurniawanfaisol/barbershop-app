@@ -16,7 +16,7 @@ const envSchema = z.object({
   SMTP_FROM: z.string().email().default("noreply@barberpro.local"),
   NEXT_PUBLIC_TAX_RATE: z.coerce.number().default(11),
   NEXT_PUBLIC_CURRENCY: z.string().default("IDR"),
-  NEXT_PUBLIC_SHOP_NAME: z.string().default("BarberPro"),
+  NEXT_PUBLIC_SHOP_NAME: z.string().default("Hexa Barber"),
 });
 
 export type Env = z.infer<typeof envSchema>;

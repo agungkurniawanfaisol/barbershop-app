@@ -2,9 +2,14 @@ import Link from "next/link";
 import { ArrowRight, Sparkles } from "lucide-react";
 import { buttonVariants } from "@/components/ui/button";
 import { ROUTES } from "@/constants/routes";
+import type { LandingMeta } from "@/types/landing";
 import { cn } from "@/lib/utils";
 
-export function LandingCta() {
+type LandingCtaProps = {
+  meta: LandingMeta;
+};
+
+export function LandingCta({ meta }: LandingCtaProps) {
   return (
     <section className="relative overflow-hidden border-t">
       <div
@@ -18,14 +23,13 @@ export function LandingCta() {
       <div className="relative mx-auto max-w-3xl px-4 py-24 text-center sm:px-6 sm:py-28">
         <div className="mx-auto mb-6 inline-flex items-center gap-2 rounded-full border border-white/20 bg-white/10 px-4 py-1.5 text-sm text-white/90 backdrop-blur-sm">
           <Sparkles className="size-4" aria-hidden />
-          Mulai dalam hitungan menit
+          {meta.ctaEyebrow}
         </div>
         <h2 className="font-display text-3xl font-semibold tracking-tight text-white sm:text-4xl lg:text-5xl">
-          Siap mengelola barbershop lebih efisien?
+          {meta.ctaTitle}
         </h2>
         <p className="mx-auto mt-5 max-w-lg text-base leading-relaxed text-white/80">
-          Masuk dengan akun staff untuk mengakses dashboard, kasir, laporan, dan
-          pengaturan toko — dalam satu platform premium.
+          {meta.ctaDescription}
         </p>
         <div className="mt-10 flex flex-col items-center justify-center gap-3 sm:flex-row">
           <Link

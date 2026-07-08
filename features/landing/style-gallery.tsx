@@ -1,5 +1,5 @@
 import Image from "next/image";
-import { HAIRCUT_STYLES } from "@/features/landing/constants";
+import type { LandingItemDto } from "@/types/landing";
 import { cn } from "@/lib/utils";
 
 const BENTO_SPANS = [
@@ -9,7 +9,17 @@ const BENTO_SPANS = [
   "",
 ] as const;
 
-export function StyleGallery() {
+type StyleGalleryProps = {
+  shopName: string;
+  styles: LandingItemDto[];
+  description: string;
+};
+
+export function StyleGallery({
+  shopName,
+  styles,
+  description,
+}: StyleGalleryProps) {
   return (
     <section
       id="gaya-potongan"
@@ -19,62 +29,56 @@ export function StyleGallery() {
         <div className="mb-14 flex flex-col gap-6 lg:flex-row lg:items-end lg:justify-between">
           <div className="max-w-2xl">
             <p className="text-sm font-medium tracking-[0.18em] text-accent uppercase">
-              Koleksi
+              Koleksi {shopName}
             </p>
             <h2 className="font-display mt-3 text-3xl font-semibold tracking-tight sm:text-4xl lg:text-5xl">
               Gaya potongan andalan
             </h2>
             <div className="landing-gold-line mt-4 h-px w-16" aria-hidden />
-            <p className="mt-4 text-muted-foreground">
-              Kurasi visual premium untuk inspirasi pelanggan — setiap potongan
-              dikerjakan dengan standar konsisten oleh barber berpengalaman.
-            </p>
+            <p className="mt-4 text-muted-foreground">{description}</p>
           </div>
-          <p className="text-sm font-medium text-muted-foreground tabular-nums">
-            {HAIRCUT_STYLES.length} signature looks
-          </p>
         </div>
 
-        <ul className="grid auto-rows-[minmax(180px,auto)] gap-4 sm:grid-cols-2 lg:grid-cols-3 lg:gap-5">
-          {HAIRCUT_STYLES.map((style, index) => (
+        <ul className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4 lg:grid-rows-2">
+          {styles.map((style, index) => (
             <li
-              key={style.slug}
+              key={style.id}
               className={cn(
                 "landing-card-hover group relative overflow-hidden rounded-2xl border bg-card shadow-sm",
                 BENTO_SPANS[index] ?? "",
               )}
             >
-              <div
-                className={cn(
-                  "relative overflow-hidden",
-                  index === 0 ? "aspect-[4/5] sm:aspect-auto sm:h-full sm:min-h-[420px]" : "aspect-[4/3]",
-                )}
-              >
-                <Image
-                  src={style.image}
-                  alt={`Gaya potongan ${style.title}`}
-                  width={800}
-                  height={index === 0 ? 1000 : 600}
-                  sizes={
-                    index === 0
-                      ? "(max-width: 1024px) 100vw, 66vw"
-                      : "(max-width: 640px) 100vw, 33vw"
-                  }
-                  className="size-full object-cover transition-transform duration-500 ease-out group-hover:scale-[1.03]"
-                />
-                <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/10 to-transparent" />
-                <span className="absolute top-4 left-4 flex size-9 items-center justify-center rounded-full border border-white/20 bg-black/30 text-sm font-semibold text-white tabular-nums backdrop-blur-sm">
-                  {String(index + 1).padStart(2, "0")}
-                </span>
-                <div className="absolute inset-x-0 bottom-0 p-5 sm:p-6">
-                  <h3 className="font-display text-xl font-medium text-white sm:text-2xl">
-                    {style.title}
-                  </h3>
-                  <p className="mt-1 line-clamp-2 text-sm leading-relaxed text-white/75">
-                    {style.description}
-                  </p>
+              {style.imageUrl ? (
+                <div className="relative aspect-[4/5] sm:aspect-auto sm:min-h-[220px]">
+                  <Image
+                    src={style.imageUrl}
+                    alt={style.title}
+                    fill
+                    sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 25vw"
+                    className="object-cover transition-transform duration-500 group-hover:scale-105"
+                  />
+                  <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent" />
+                  <div className="absolute inset-x-0 bottom-0 p-5">
+                    <h3 className="font-display text-xl font-medium text-white">
+                      {style.title}
+                    </h3>
+                    {style.description ? (
+                      <p className="mt-1 line-clamp-2 text-sm text-white/75">
+                        {style.description}
+                      </p>
+                    ) : null}
+                  </div>
                 </div>
-              </div>
+              ) : (
+                <div className="p-5">
+                  <h3 className="font-display text-xl font-medium">{style.title}</h3>
+                  {style.description ? (
+                    <p className="mt-2 text-sm text-muted-foreground">
+                      {style.description}
+                    </p>
+                  ) : null}
+                </div>
+              )}
             </li>
           ))}
         </ul>
